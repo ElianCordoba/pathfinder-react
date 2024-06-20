@@ -1,0 +1,26 @@
+.map-container {
+  display: grid;
+  font-size: 10px;
+}
+
+.spot {
+  border: 1px solid black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.button {
+  width: 15%;
+  margin: 5px auto;
+  border: 1px solid black;
+  border-radius: 5px;  
+}
+
+.empty {
+  background-color: white;
+}
+
+.wall {
+  background-color: black;
+}
