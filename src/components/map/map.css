@@ -24,3 +24,11 @@
 .wall {
   background-color: black;
 }
+
+.start {
+  background-color: green;
+}
+
+.finish {
+  background-color: red;
+}

@@ -4,6 +4,8 @@ import { Kind } from "../../utils/contants";
 
 import "./map.css";
 
+export type Map = Kind[][];
+
 export function Map({ rows = 20, cols = 20 }: { rows: number; cols: number }) {
   const [map, setMap] = useState(getRandomMap(rows, cols));
 
@@ -23,7 +25,36 @@ export function Map({ rows = 20, cols = 20 }: { rows: number; cols: number }) {
     setMap([...map, newRow]);
   }
 
+  function reset() {
+    setStartTile(null);
+    setFinishTile(null);
+  }
+
   console.log("Render", map);
+
+  const [startTile, setStartTile] = useState<string | null>(null);
+  const [finishTile, setFinishTile] = useState<string | null>(null);
+
+  function handleClick(x: any) {
+    const selectedTile = x.target.closest("div") as HTMLDivElement;
+    debugger;
+    // Not a tile
+    if (!selectedTile.className.includes("spot")) {
+      return;
+    }
+
+    if (/(wall|start|finish)/.test(selectedTile.className)) {
+      return;
+    }
+
+    if (!startTile) {
+      setStartTile(selectedTile.id);
+    } else if (!finishTile) {
+      setFinishTile(selectedTile.id);
+    }
+
+    // debugger;
+  }
 
   const numberOfColumns = useMemo(() => map[0].length, [map]);
   const numberOfRows = useMemo(() => map.length, [map]);
@@ -32,13 +63,36 @@ export function Map({ rows = 20, cols = 20 }: { rows: number; cols: number }) {
     console.log(`Changes: Columns: ${numberOfColumns} Rows: ${numberOfRows}`);
   }, [numberOfColumns, numberOfRows]);
 
+  function getNodeClasses(col: number, id: string) {
+    let classes = "spot";
+
+    if (col == Kind.Empty) {
+      classes += " empty";
+    } else {
+      classes += " wall";
+    }
+
+    if (id == startTile) {
+      classes += " start";
+    } else if (id == finishTile) {
+      classes += " finish";
+    }
+
+    return classes;
+  }
+
   return (
     <>
       <button className="button" onClick={addColumn}>
         Add colum
       </button>
+
       <button className="button" onClick={addRow}>
         Add row
+      </button>
+
+      <button className="button" onClick={reset}>
+        Reset
       </button>
 
       <div
@@ -47,10 +101,12 @@ export function Map({ rows = 20, cols = 20 }: { rows: number; cols: number }) {
           gridTemplateColumns: `repeat(${numberOfColumns}, 30px)`,
           gridTemplateRows: `repeat(${numberOfRows}, 30px)`,
         }}
+        onClick={handleClick}
       >
         {map.map((row, rowNum) => {
           return row.map((col, colNum) => {
-            return <div className={`spot ${col == Kind.Empty ? "empty" : "wall"}`}></div>;
+            const id = `${rowNum}-${colNum}`;
+            return <div id={id} key={id} className={getNodeClasses(col, id)}></div>;
           });
         })}
       </div>
