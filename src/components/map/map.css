@@ -1,4 +1,5 @@
 .map-container {
+  margin: auto;
   display: grid;
   font-size: 10px;
 }
@@ -17,6 +18,8 @@
   border-radius: 5px;  
 }
 
+/* Kinds */
+
 .empty {
   background-color: white;
 }
@@ -31,4 +34,12 @@
 
 .finish {
   background-color: red;
+}
+
+.frontier {
+  background-color: lightcoral
+}
+
+.reached {
+  background-color: brown
 }
