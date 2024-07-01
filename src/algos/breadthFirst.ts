@@ -1,42 +1,3 @@
-/*
-frontier = [start]
-reached = new Set()
-
-while frontier.length != 0 {
-  current = frontienr.pop()
-
-  for neighbor in = get_neighbors
-    if !reached.has(neibour)
-      frontier.push(neibour)
-      frontier.add(neibour)
-
-
-}
-
-*/
-
-/* 
-  Map format:
-
-  [  
-    [1, 0, 0, 1, 0],
-    [0, 1, 0, 0, 0],
-    [1, 0, 0, 0, 1],
-    [1, 1, 0, 0, 0],
-  ]
-
-  Ids:
-
-  [
-    [ 0-0, 0-1, 0-2, 0-3, 0-4],
-    [ 1-0, 1-1, 1-2, 1-3, 1-4],
-    [ 2-0, 2-1, 2-2, 2-3, 2-4],
-    [ 3-0, 3-1, 3-2, 3-3, 3-4],
-  ]
-
-  NodeId = x-y
-*/
-
 import { Map } from "../components/map/map";
 import { Kind } from "../utils/contants";
 import { formatId } from "../utils/utils";
@@ -73,10 +34,19 @@ function getNeighbors(map: Map, node: NodeId): NodeId[] {
   const maxX = map[0].length - 1;
   const maxY = map.length - 1;
 
-  // Bound check
+  
   function isValid(candidate: [x: number, y: number]) {
     const [_x, _y] = candidate
-    return !(_x < 0 || _x > maxX || _y < 0 || _y > maxY)
+
+    if ((_x < 0 || _x > maxX || _y < 0 || _y > maxY)) {
+      return false
+    }
+
+    if (map[_y][_x] === Kind.Wall) {
+      return false
+    } else {
+      return true
+    }
   }
 
   
