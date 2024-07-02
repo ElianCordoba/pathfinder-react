@@ -21,8 +21,8 @@ export function useIsKeyPressed(keyToTrack: string) {
 
   useEffect(() => {
     listenShiftPressed();
-    return removeShiftPressed;
+    return () => removeShiftPressed();
   }, []);
 
-  return isKeyPressed;
+  return [isKeyPressed];
 }

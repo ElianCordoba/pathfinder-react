@@ -19,7 +19,8 @@ function App() {
 
   const [step, frontier, reached, nextStep, resetSearch] = useBreadthFirstSearch(map, startNode, finishNode);
 
-  const isShiftPressed = useIsKeyPressed("Shift");
+  console.log("app render");
+  const [isShiftPressed] = useIsKeyPressed("Shift");
 
   // Event handlers
 
