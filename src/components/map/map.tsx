@@ -1,42 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { getRandomMap, getRandomSpot } from "../../utils/random";
 import { Kind } from "../../utils/contants";
 
 import "./map.css";
 import { NodeId, Search, search } from "../../algos/breadthFirst";
 import { parseId } from "../../utils/utils";
+import { useMap } from "../../hooks/useMap";
 
-export type Map = Kind[][];
-
-export function Map({ x = 20, y = 20 }: { x: number; y: number }) {
-  const mapRef = useRef<HTMLDivElement | null>(null);
-
-  const [map, setMap] = useState(getRandomMap(x, y));
-
-  function addColumn() {
-    const newMap = map.map((row) => {
-      row.push(getRandomSpot());
-      return row;
-    });
-
-    setMap(newMap);
-  }
-
-  function addRow() {
-    const numberOfColumns = map[0].length;
-    const newRow = new Array(numberOfColumns).fill(0).map(() => getRandomSpot());
-
-    setMap([...map, newRow]);
-  }
-
-  function reset() {
-    setStartTile(null);
-    setFinishTile(null);
-    setStep(0);
-    setFrontier([]);
-    setReached([]);
-    currentSearch.current = undefined;
-  }
+export function MapViewer({ x = 20, y = 20 }: { x: number; y: number }) {
+  const [map, mapControls] = useMap(x, y);
 
   const [step, setStep] = useState(0);
   const [frontier, setFrontier] = useState<NodeId[]>([]);
@@ -67,8 +38,6 @@ export function Map({ x = 20, y = 20 }: { x: number; y: number }) {
     setReached(reached);
   }
 
-  console.log("Render", map);
-
   const [startTile, setStartTile] = useState<string | null>(null);
   const [finishTile, setFinishTile] = useState<string | null>(null);
 
@@ -82,49 +51,38 @@ export function Map({ x = 20, y = 20 }: { x: number; y: number }) {
 
     const [x, y] = parseId(nodeId);
 
-    const node = map[y][x];
-
-    // Toggle wall / empty
     if (shiftPressed) {
-      const updatedMap = [...map];
-      const currentKind = updatedMap[y][x];
+      // Toggle wall / empty
+      mapControls.toggleNode(x, y);
+    } else {
+      // Set start / finish
+      const node = mapControls.realMap.peek(x, y);
 
-      if (currentKind === Kind.Wall) {
-        updatedMap[y][x] = Kind.Empty;
-        setMap(updatedMap);
-      } else if (currentKind === Kind.Empty) {
-        updatedMap[y][x] = Kind.Wall;
-        setMap(updatedMap);
-      } else {
+      if (node === Kind.Wall || nodeId == startTile || nodeId == finishTile) {
+        return;
       }
-      return;
-    }
 
-    // Set start / finish
-
-    if (node === undefined || node === Kind.Wall) {
-      return;
-    }
-
-    if (nodeId == startTile || nodeId == finishTile) {
-      return;
-    }
-
-    if (!startTile) {
-      setStartTile(selectedTile.id);
-    } else if (!finishTile) {
-      setFinishTile(selectedTile.id);
+      if (!startTile) {
+        setStartTile(selectedTile.id);
+      } else if (!finishTile) {
+        setFinishTile(selectedTile.id);
+      }
     }
   }
 
-  const numberOfColumns = useMemo(() => map[0].length, [map]);
-  const numberOfRows = useMemo(() => map.length, [map]);
+  function reset() {
+    setStartTile(null);
+    setFinishTile(null);
+    setStep(0);
+    setFrontier([]);
+    setReached([]);
+    currentSearch.current = undefined;
+  }
 
   const [shiftPressed, setShiftPressed] = useState(false);
   function trackShiftPressed(e: KeyboardEvent, newValue: boolean) {
     if (e.key === "Shift") {
       setShiftPressed(newValue);
-      console.log(newValue);
     }
   }
 
@@ -140,11 +98,11 @@ export function Map({ x = 20, y = 20 }: { x: number; y: number }) {
 
   useEffect(() => {
     listenShiftPressed();
-
-    return () => removeShiftPressed();
-    // return () => document.removeEventListener("keydown", toggleNodeHandler);
+    return removeShiftPressed;
   }, []);
 
+  const numberOfColumns = useMemo(() => map[0].length, [map]);
+  const numberOfRows = useMemo(() => map.length, [map]);
   // useEffect(() => {
   //   console.log(`Changes: Columns: ${numberOfColumns} Rows: ${numberOfRows}`);
   // }, [numberOfColumns, numberOfRows]);
@@ -173,11 +131,11 @@ export function Map({ x = 20, y = 20 }: { x: number; y: number }) {
 
   return (
     <>
-      <button className="button" onClick={addColumn}>
-        Add colum
+      <button className="button" onClick={mapControls.addColumn}>
+        Add column
       </button>
 
-      <button className="button" onClick={addRow}>
+      <button className="button" onClick={mapControls.addRow}>
         Add row
       </button>
 
@@ -196,7 +154,6 @@ export function Map({ x = 20, y = 20 }: { x: number; y: number }) {
       <h1>Shift pressed? {shiftPressed ? "1" : "0"}</h1>
 
       <div
-        ref={mapRef}
         className="map-container"
         style={{
           gridTemplateColumns: `repeat(${numberOfColumns}, 30px)`,
