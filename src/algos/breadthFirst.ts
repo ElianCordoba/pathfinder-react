@@ -1,12 +1,8 @@
-import { Map } from "../components/map/map";
-import { Kind } from "../utils/contants";
+
+import { Kind, MapValues, NodeId, Search } from "../shared";
 import { formatId } from "../utils/utils";
 
-export type NodeId = `${number}-${number}`;
-
-export type Search = Generator<{ step: number; frontier: NodeId[]; reached: NodeId[] }, void, unknown>;
-
-export function* search(map: Map, startNode: NodeId, targetNode: NodeId): Search {
+export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): Search {
   // Next to visit nodes
   const frontier: NodeId[] = [startNode];
   // List of visited nodes
@@ -28,7 +24,7 @@ export function* search(map: Map, startNode: NodeId, targetNode: NodeId): Search
   }
 }
 
-function getNeighbors(map: Map, node: NodeId): NodeId[] {
+function getNeighbors(map: MapValues, node: NodeId): NodeId[] {
   const [x, y] = node.split("-").map(Number);
 
   const maxX = map[0].length - 1;
@@ -118,8 +114,4 @@ function getNeighbors(map: Map, node: NodeId): NodeId[] {
   }
 
   return result;
-}
-
-function isNodeValid(map: Map, x: number, y: number) {
-
 }

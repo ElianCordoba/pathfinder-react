@@ -1,4 +1,5 @@
-import { Kind, PERCENTAGE_OF_WALLS } from "./contants"
+import { Kind, PERCENTAGE_OF_WALLS } from "../shared"
+
 
 export function getRandomMap(x: number,y: number,  percentageOfWalls = PERCENTAGE_OF_WALLS): Kind[][] {
   const map = Array.from({ length: y }, () => Array.from({ length: x}, () => getRandomSpot(percentageOfWalls)))

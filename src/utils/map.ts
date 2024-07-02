@@ -1,4 +1,4 @@
-import { Kind } from "./contants";
+import { Kind } from "../shared";
 import { getRandomMap, getRandomSpot } from "./random"
 
 export class Map {
