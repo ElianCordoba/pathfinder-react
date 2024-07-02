@@ -3,3 +3,8 @@
   flex-direction: column;
 }
 
+body {
+  color: white;
+  font-family: monospace;
+  background-color: rgb(50, 50, 50);
+}
