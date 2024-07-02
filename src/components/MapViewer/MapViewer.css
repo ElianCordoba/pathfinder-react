@@ -11,6 +11,9 @@
   align-items: center;
 }
 
+.arrow {
+  height: 20px;
+}
 
 /* Kinds */
 
@@ -36,4 +39,8 @@
 
 .reached {
   background-color: brown
+}
+
+.path {
+  border: 4px dashed blue;
 }

@@ -1,14 +1,19 @@
 import { useRef, useState } from "react";
-import { MapValues, NodeId, Search } from "../shared";
+import { MapValues, NodeId, PathNode, Reached, Search } from "../shared";
 import { search } from "../algos/breadthFirst";
 
 export function useBreadthFirstSearch(map: MapValues, startNode: NodeId | null, finishNode: NodeId | null) {
   const [step, setStep] = useState(0);
   const [frontier, setFrontier] = useState<NodeId[]>([]);
-  const [reached, setReached] = useState<NodeId[]>([]);
+  const [reached, setReached] = useState<Reached>(new Map());
+  const [path, setPath] = useState<PathNode[] | undefined>([]);
 
   let currentSearch = useRef<Search>();
+  let searchDone = useRef(false);
   function nextStep() {
+    if (searchDone.current) {
+      return;
+    }
     if (!startNode || !finishNode) {
       console.log("Refused to start calculation as start and / or finish nodes are not set");
       return;
@@ -21,7 +26,9 @@ export function useBreadthFirstSearch(map: MapValues, startNode: NodeId | null, 
     const nextStep = currentSearch.current.next();
 
     if (nextStep.done) {
+      searchDone.current = true;
       console.log("Search done");
+      setPath(nextStep.value.path);
       return;
     }
 
@@ -35,9 +42,11 @@ export function useBreadthFirstSearch(map: MapValues, startNode: NodeId | null, 
   function resetSearch() {
     setStep(0);
     setFrontier([]);
-    setReached([]);
+    setReached(new Map());
+    setPath([]);
     currentSearch.current = undefined;
+    searchDone.current = false;
   }
 
-  return [step, frontier, reached, nextStep, resetSearch] as const;
+  return [step, frontier, reached, path, nextStep, resetSearch] as const;
 }

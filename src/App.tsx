@@ -17,7 +17,7 @@ function App() {
 
   const [map, mapControls] = useMap(3, 3);
 
-  const [step, frontier, reached, nextStep, resetSearch] = useBreadthFirstSearch(map, startNode, finishNode);
+  const [step, frontier, reached, path, nextStep, resetSearch] = useBreadthFirstSearch(map, startNode, finishNode);
 
   const [isShiftPressed] = useIsKeyPressed("Shift");
 
@@ -66,6 +66,7 @@ function App() {
         finishNode={finishNode}
         frontier={frontier}
         reached={reached}
+        path={path}
       />
       ;
     </>

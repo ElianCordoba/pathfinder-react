@@ -9,8 +9,22 @@ export enum Kind {
   Reached
 }
 
+export enum Direction {
+  Up,
+  Down,
+  Left,
+  Right,
+  UpRight,
+  DownRight,
+  UpLeft,
+  DownLeft
+}
+
 export type MapValues = Kind[][]
 
 export type NodeId = `${number}-${number}`;
 
-export type Search = Generator<{ step: number; frontier: NodeId[]; reached: NodeId[] }, void, unknown>;
+export type PathNode = { id: NodeId, cameFrom?: NodeId, direction?: Direction }
+export type Reached = Map<NodeId,PathNode >
+
+export type Search = Generator<{ step: number; frontier: NodeId[]; reached: Reached }, { path: PathNode[] | undefined }, unknown>;

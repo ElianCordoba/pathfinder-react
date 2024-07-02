@@ -7,11 +7,11 @@ export class Map {
     this.values = getRandomMap(x, y);
   }
 
-  get maxX() {
+  get maxY() {
     return this.values.length;
   }
 
-  get maxY() {
+  get maxX() {
     return this.values[0].length;
   }
 
