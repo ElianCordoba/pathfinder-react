@@ -11,7 +11,7 @@ export function useMap(initialXSize: number, initialYSize: number) {
     addColumn: () => setMap(realMap.current.addColum()),
     addRow: () => setMap(realMap.current.addRow()),
     toggleNode: (x: number, y: number) => setMap(realMap.current.toogleNode(x, y)),
-    realMap,
+    realMap: realMap.current,
   };
 
   return [map, mapControls] as const;

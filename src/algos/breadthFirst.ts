@@ -1,6 +1,6 @@
 
 import { Kind, MapValues, NodeId, Search } from "../shared";
-import { formatId } from "../utils/utils";
+import { assert, formatId } from "../utils/utils";
 
 export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): Search {
   // Next to visit nodes
@@ -52,61 +52,56 @@ function getNeighbors(map: MapValues, node: NodeId): NodeId[] {
   const left: [number, number] = [x - 1, y]
   const right: [number, number] = [x + 1, y]
 
-  const neighborsCoords = [up, down, left, right]
+  // The diagonals are only included if we can reach it, for example:
+  // 
+  //  - A X -
+  //  - X B -
+  //  - - - -
+  // We can't go from A to B diagonally
 
-  if (isValid(left) && isValid(up)) {
-    neighborsCoords.push([x - 1, y - 1])
-  }
+  const neighborsCoords = [up]
 
-  if (isValid(right) && isValid(up)) {
+  if (isValid(up) && isValid(right)) {
     neighborsCoords.push([x + 1, y - 1])
   }
 
-  if (isValid(left) && isValid(down)) {
-    neighborsCoords.push([x - 1, y + 1])
-  }
+  neighborsCoords.push(right)
 
-  if (isValid(right) && isValid(down)) {
+  if (isValid(down) && isValid(right)) {
     neighborsCoords.push([x + 1, y + 1])
   }
 
+  neighborsCoords.push(down)
 
+  if (isValid(down) && isValid(left)) {
+    neighborsCoords.push([x - 1, y + 1])
+  }
 
-  // const neighborsCoords = [
-  //   [x, y - 1], // up
-  //   [x, y + 1], // down
-  //   [x - 1, y], // left
-  //   [x + 1, y], // right
-   
-  // ];
+  neighborsCoords.push(left)
 
-  // if (neighborsCoords[0])
-
-  // [x - 1, y - 1], // upLeft
-  // [x + 1, y - 1], // upRight
-  // [x - 1, y + 1], // downLeft
-  // [x + 1, y + 1], // downRight
+  if (isValid(up) && isValid(left)) {
+    neighborsCoords.push([x - 1, y - 1])
+  }
 
   const result: NodeId[] = [];
 
-
-
   for (const coords of neighborsCoords) {
     const [x, y] = coords as any;
-    console.log(x, y, document.getElementById(formatId(x, y)));
+    // console.log(x, y, document.getElementById(formatId(x, y)));
 
     if (x < 0 || x > maxX || y < 0 || y > maxY) {
       continue;
     }
 
-    if (map[y] == undefined || map[y][x] == undefined) {
-      debugger
-      break
-    }
-
+    assert(
+      map[y] !== undefined && 
+      map[y][x] !== undefined &&
+      map[y][x] !== undefined
+    )
+    
     const node = map[y][x];
 
-    if (node === undefined || node === Kind.Wall) {
+    if (node === Kind.Wall) {
       continue;
     }
 

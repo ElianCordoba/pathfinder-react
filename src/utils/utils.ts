@@ -1,4 +1,11 @@
-import { NodeId } from "../algos/breadthFirst";
+import { NodeId } from "../shared"
+
+export function assert(condition: boolean) {
+  if (!condition) {
+    throw new Error('Assertion failed')
+  }
+}
+
 
 export function parseId(id: NodeId): [x: number, y: number] {
   const [x, y] = id.split('-').map(Number)

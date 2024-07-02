@@ -19,7 +19,6 @@ function App() {
 
   const [step, frontier, reached, nextStep, resetSearch] = useBreadthFirstSearch(map, startNode, finishNode);
 
-  console.log("app render");
   const [isShiftPressed] = useIsKeyPressed("Shift");
 
   // Event handlers
@@ -32,7 +31,7 @@ function App() {
       mapControls.toggleNode(x, y);
     } else {
       // Set start / finish nodes
-      const node = mapControls.realMap.peek(x, y);
+      const node = mapControls.realMap.at(x, y);
 
       if (node === Kind.Wall || nodeId == startNode || nodeId == finishNode) {
         return;

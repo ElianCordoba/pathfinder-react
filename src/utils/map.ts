@@ -1,20 +1,28 @@
 import { Kind } from "../shared";
-import { getRandomMap, getRandomSpot } from "./random"
+import { getRandomMap, getRandomSpot } from "./random";
 
 export class Map {
-  values: Kind[][]
-  constructor(public xMax: number, public yMax: number) {
-    this.values = getRandomMap(xMax, yMax)
+  values: Kind[][];
+  constructor(x: number, y: number) {
+    this.values = getRandomMap(x, y);
   }
 
-  peek(x: number, y: number) {
+  get maxX() {
+    return this.values.length;
+  }
+
+  get maxY() {
+    return this.values[0].length;
+  }
+
+  at(x: number, y: number) {
     if (!this.#validCoords(x, y)) {
-      throw new Error(`Invalid coords x: ${x} y: ${y}`)
+      throw new Error(`Invalid coords x: ${x} y: ${y}`);
     }
 
     const node = this.values[y][x];
 
-    return node
+    return node;
   }
 
   addColum() {
@@ -23,42 +31,42 @@ export class Map {
       return x;
     });
 
-    return newMap;
+    return (this.values = newMap);
   }
 
   addRow() {
     const numberOfColumns = this.values[0].length;
     const newRow = new Array(numberOfColumns).fill(0).map(() => getRandomSpot());
 
-    return[...this.values, newRow];
+    return (this.values = [...this.values, newRow]);
   }
 
   toogleNode(x: number, y: number) {
     if (!this.#validCoords(x, y)) {
-      throw new Error(`Invalid coords x: ${x} y: ${y}`)
+      throw new Error(`Invalid coords x: ${x} y: ${y}`);
     }
 
-    const newMap = [...this.values]
-    const currentKind = this.peek(x, y)
+    const newMap = [...this.values];
+    const currentKind = this.at(x, y);
 
     if (currentKind === Kind.Empty) {
-      newMap[y][x] = Kind.Wall
+      newMap[y][x] = Kind.Wall;
     } else {
-      newMap[y][x] = Kind.Empty
+      newMap[y][x] = Kind.Empty;
     }
 
-    return newMap
+    return newMap;
   }
 
   #validCoords(x: number, y: number) {
-    return this.#validX(x) && this.#validY(y)
+    return this.#validX(x) && this.#validY(y);
   }
 
   #validX(x: number) {
-    return x >= 0 && x <= this.xMax
+    return x >= 0 && x <= this.maxX;
   }
 
   #validY(y: number) {
-    return y >= 0 && y <= this.yMax
+    return y >= 0 && y <= this.maxY;
   }
 }
