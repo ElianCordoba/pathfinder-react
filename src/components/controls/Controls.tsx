@@ -1,6 +1,12 @@
 import "./Controls.css";
 
-export function Controls({ addColumnHandler, addRowHandler, resetHandler, nextStepHandler }: any) {
+export function Controls({
+  addColumnHandler,
+  addRowHandler,
+  resetHandler,
+  nextStepHandler,
+  automaticSeachHandler,
+}: any) {
   return (
     <div className="buttons-container">
       <button className="button" onClick={addColumnHandler}>
@@ -17,6 +23,10 @@ export function Controls({ addColumnHandler, addRowHandler, resetHandler, nextSt
 
       <button className="button" onClick={nextStepHandler}>
         Next step
+      </button>
+
+      <button className="button" onClick={automaticSeachHandler}>
+        Automatic search
       </button>
     </div>
   );

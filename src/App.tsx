@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import "./App.css";
 
 import { MapViewer } from "./components/MapViewer/MapViewer";
@@ -6,10 +6,11 @@ import { Controls } from "./components/controls/Controls";
 
 import { useIsKeyPressed } from "./hooks/useIsKeyPressed";
 import { useMap } from "./hooks/useMap";
-import { useBreadthFirstSearch } from "./hooks/useBreadthFirstSearch";
+import { usePathfinder } from "./hooks/useBreadthFirstSearch";
 
 import { parseId } from "./utils/utils";
 import { Kind, NodeId } from "./shared";
+import { search } from "./algos/breadthFirst";
 
 function App() {
   const [startNode, setStartTile] = useState<NodeId | null>(null);
@@ -17,7 +18,7 @@ function App() {
 
   const [map, mapControls] = useMap(3, 3);
 
-  const [step, frontier, reached, path, nextStep, resetSearch] = useBreadthFirstSearch(map, startNode, finishNode);
+  const [step, frontier, reached, path, nextStep, resetSearch] = usePathfinder(search, map, startNode, finishNode);
 
   const [isShiftPressed] = useIsKeyPressed("Shift");
 
@@ -49,6 +50,14 @@ function App() {
     setStartTile(null);
     setFinishTile(null);
     resetSearch();
+    clearInterval(intervalId.current);
+  }
+
+  const intervalId = useRef(0);
+  function automaticSeach() {
+    intervalId.current = setInterval(() => {
+      nextStep();
+    }, 100);
   }
 
   return (
@@ -58,7 +67,9 @@ function App() {
         addRowHandler={mapControls.addRow}
         resetHandler={reset}
         nextStepHandler={nextStep}
+        automaticSeachHandler={automaticSeach}
       />
+      <h1>Step: {step}</h1>
       <MapViewer
         map={map}
         onNodeClick={onNodeClick}
@@ -68,7 +79,6 @@ function App() {
         reached={reached}
         path={path}
       />
-      ;
     </>
   );
 }

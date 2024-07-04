@@ -1,14 +1,18 @@
 import { useRef, useState } from "react";
-import { MapValues, NodeId, PathNode, Reached, Search } from "../shared";
-import { search } from "../algos/breadthFirst";
+import { MapValues, NodeId, PathNode, Reached, PathfinderSearch, PathfinderFunction } from "../shared";
 
-export function useBreadthFirstSearch(map: MapValues, startNode: NodeId | null, finishNode: NodeId | null) {
+export function usePathfinder(
+  algorithm: PathfinderFunction,
+  map: MapValues,
+  startNode: NodeId | null,
+  finishNode: NodeId | null
+) {
   const [step, setStep] = useState(0);
   const [frontier, setFrontier] = useState<NodeId[]>([]);
   const [reached, setReached] = useState<Reached>(new Map());
   const [path, setPath] = useState<PathNode[] | undefined>([]);
 
-  let currentSearch = useRef<Search>();
+  let currentSearch = useRef<PathfinderSearch>();
   let searchDone = useRef(false);
   function nextStep() {
     if (searchDone.current) {
@@ -20,7 +24,7 @@ export function useBreadthFirstSearch(map: MapValues, startNode: NodeId | null, 
     }
 
     if (!currentSearch.current) {
-      currentSearch.current = search(map, startNode as any, finishNode as any);
+      currentSearch.current = algorithm(map, startNode as any, finishNode as any);
     }
 
     const nextStep = currentSearch.current.next();

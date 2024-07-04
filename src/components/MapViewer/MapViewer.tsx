@@ -22,16 +22,6 @@ export function MapViewer({
   reached: Reached;
   path: PathNode[] | undefined;
 }) {
-  useEffect(() => {
-    if (path?.length) {
-      console.log("path changed", path);
-      // for (const node of path) {
-
-      // }
-      // _setMap(map);
-    }
-  }, [path]);
-
   function handleClick(event: any) {
     const selectedTile = event.target.closest("div") as HTMLDivElement;
     const nodeId = selectedTile.id as any;
@@ -60,8 +50,7 @@ export function MapViewer({
       classes += " start";
     } else if (id == finishNode) {
       classes += " finish";
-    }
-    if (path?.find((p) => p.id === id)) {
+    } else if (path?.find((p) => p.id === id)) {
       console.log("path hitted");
       classes += " path";
     } else if (frontier.find((f) => f === id)) {

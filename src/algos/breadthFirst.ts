@@ -1,7 +1,7 @@
-import { Direction, Kind, MapValues, NodeId, PathNode, Reached, Search } from "../shared";
-import { assert, formatId } from "../utils/utils";
+import { Direction, Kind, MapValues, NodeId, PathNode, Reached, PathfinderSearch } from "../shared";
+import { assert, formatId, oppositeDirection } from "../utils/utils";
 
-export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): Search {
+export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): PathfinderSearch {
   // Next to visit nodes
   const frontier: NodeId[] = [startNode];
   // List of visited nodes
@@ -13,7 +13,6 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
     const currentNode = frontier.shift()!;
 
     if (currentNode === targetNode) {
-      // reached.set(currentNode, { id: currentNode, cameFrom: currentNode, direction: Direction.Up });
       console.log('Early exit')
       break mainLoop
     }
@@ -34,14 +33,9 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
     yield { step, frontier, reached };
   }
 
-  if (reached.size) {
-    console.log('recons path')
-    const path = reconstructPath(startNode, targetNode, reached)
-    return { path };
-  } else {
-    return { path: undefined };
-  }
-  
+  return {
+    path: reached.size ? reconstructPath(startNode, targetNode, reached) : undefined
+  }  
 }
 
 interface NeighborNode {
@@ -81,27 +75,21 @@ function getNeighbors(map: MapValues, node: NodeId): NeighborNode[] {
   //  - - - -
   // We can't go from A to B diagonally
 
-  const neighborsCoords: NeighborNode[] = [up];
+  const neighborsCoords: NeighborNode[] = [up, right, down, left];
 
-  if (isValid(up) && isValid(right)) {
+  if (isValid(up) || isValid(right)) {
     neighborsCoords.push({ direction: Direction.UpRight, id: [x + 1, y - 1] });
   }
 
-  neighborsCoords.push(right);
-
-  if (isValid(down) && isValid(right)) {
+  if (isValid(down) || isValid(right)) {
     neighborsCoords.push({ direction: Direction.DownRight, id: [x + 1, y + 1] });
-  }
+  }  
 
-  neighborsCoords.push(down);
-
-  if (isValid(down) && isValid(left)) {
+  if (isValid(down) || isValid(left)) {
     neighborsCoords.push({ direction: Direction.DownLeft, id: [x - 1, y + 1] });
   }
 
-  neighborsCoords.push(left);
-
-  if (isValid(up) && isValid(left)) {
+  if (isValid(up) || isValid(left)) {
     neighborsCoords.push({ direction: Direction.UpLeft, id: [x - 1, y - 1] });
   }
 
@@ -147,26 +135,6 @@ function reconstructPath(startNode: NodeId, targetNode: NodeId, reached: Reached
   }
 
   path.push(start)
-  return path.reverse()
+  // path.shift()
+  return path.reverse().map(x => ({ ...x, direction: oppositeDirection(x.direction!) }))
 }
-
-// function reconstructPath2(startNode: NodeId, targetNode: NodeId, reached: Reached) {
-  
-
-//   let current = reached.get(targetNode)!
-
-//   const path: PathNode[] = [current]
-
-//   while (true) {
-//     const next = reached.get(current.cameFrom)
-
-//     if (!next) {
-//       break
-//     }
-
-//     current = next
-//   }
-
-//   path.push({ id: startNode, cameFrom: null as any, direction: current.direction })
-//   return path
-// }
