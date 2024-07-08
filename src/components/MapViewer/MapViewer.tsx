@@ -59,7 +59,6 @@ export function MapViewer({
     } else if (id == finishNode) {
       classes += " finish";
     } else if (path?.find((p) => p.id === id)) {
-      console.log("path hitted");
       classes += " path";
     } else if (nodesToVisit.find((f) => f.id === id)) {
       classes += " frontier";
@@ -109,9 +108,11 @@ export function MapViewer({
 
           const visitedNode = nodesVisited.find((x) => x.id === id);
 
-          const styles = visitedNode
-            ? { transform: `rotate(${getArrowRotation(visitedNode.directionTaken!)}deg)` }
-            : {};
+          if (visitedNode) {
+            console.log(visitedNode);
+          }
+
+          const styles = visitedNode ? { transform: `rotate(${getArrowRotation(visitedNode.direction!)}deg)` } : {};
 
           return (
             <div id={id} key={id} className={getNodeClasses(y, id)}>

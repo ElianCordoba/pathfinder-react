@@ -37,7 +37,7 @@ export interface VisitedNode {
   // Where did we came from to reach this node
   cameFrom: NodeId;
   // Direction taken from the last node to get here
-  directionTaken: Direction;
+  direction: Direction;
   // Total cost from the given path taken to here
   costSoFar: number;
 }

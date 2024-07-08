@@ -52,33 +52,3 @@ export function DebugInfoViewer({
     </div>
   );
 }
-
-function validateAndParseHoverableElement(event: any) {
-  const element = event.target.closest("td") as HTMLTableCellElement;
-
-  if (!element) {
-    return { valid: false };
-  }
-
-  const cellType = element.dataset?.type as any;
-
-  if (!dataCellTypes.includes(cellType)) {
-    return { valid: false };
-  }
-
-  const nodeIdToHoghlight = event.dataset?.nodeId!;
-
-  return {
-    valid: true,
-    id: nodeIdToHoghlight,
-  };
-}
-
-// function Hover({ onHover, children }: any) {
-//   return (
-//     <div className="hover">
-//       <div className="hover__no-hover">{children}</div>
-//       <div className="hover__hover">{onHover}</div>
-//     </div>
-//   );
-// }

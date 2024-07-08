@@ -2,8 +2,6 @@ import { Direction, Kind, MapValues, NodeId, PathfinderSearch, PathNode, Visited
 import { assert, formatId } from "../utils/utils";
 import { getCost } from "./utils";
 
-// reached = nodesVisited = candidate paths = discovered nodes
-
 export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): PathfinderSearch {
   const nodesToVisit = new PriorityQueue(startNode);
   const nodesVisited: Map<NodeId, VisitedNode> = new Map();
@@ -23,11 +21,6 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
         continue;
       }
 
-      // // Early exit
-      // if (neighbor.nodeId === targetNode) {
-      //   break mainLoop;
-      // }
-
       const movedDiagonally = neighbor.direction > Direction.Right;
       const constToVisitNeibour = getCost(currentNode.value.id, neighbor.nodeId, movedDiagonally);
       const wasNodeVisited = nodesVisited.get(neighbor.nodeId);
@@ -39,14 +32,14 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
           id: neighbor.nodeId,
           cost: newBestCost,
           cameFrom: currentNode.value.id,
-          direction: currentNode.value.direction,
+          direction: neighbor.direction,
         });
 
         nodesVisited.set(neighbor.nodeId, {
           id: neighbor.nodeId,
           cameFrom: currentNode.value.id,
           costSoFar: newBestCost,
-          directionTaken: currentNode.value.direction,
+          direction: neighbor.direction,
         });
       }
     }
@@ -111,10 +104,10 @@ export function getNeighbors(
     }
   }
 
-  const up: NeighborNode = { direction: Direction.Up, id: [x, y - 1] }; //cost: getCost(node, formatId(x, y - 1))
-  const down: NeighborNode = { direction: Direction.Down, id: [x, y + 1] }; //cost: getCost(node, formatId(x, y + 1))
-  const left: NeighborNode = { direction: Direction.Left, id: [x - 1, y] }; //cost: getCost(node, formatId(x - 1, y))
-  const right: NeighborNode = { direction: Direction.Right, id: [x + 1, y] }; //cost: getCost(node, formatId(x + 1, y))
+  const up: NeighborNode = { direction: Direction.Down, id: [x, y - 1] }; //cost: getCost(node, formatId(x, y - 1))
+  const down: NeighborNode = { direction: Direction.Up, id: [x, y + 1] }; //cost: getCost(node, formatId(x, y + 1))
+  const left: NeighborNode = { direction: Direction.Right, id: [x - 1, y] }; //cost: getCost(node, formatId(x - 1, y))
+  const right: NeighborNode = { direction: Direction.Left, id: [x + 1, y] }; //cost: getCost(node, formatId(x + 1, y))
 
   // The diagonals are only included if we can reach it, for example:
   //
@@ -123,28 +116,22 @@ export function getNeighbors(
   //  - - - -
   // We can't go from A to B diagonally
 
-  const neighborsCoords: NeighborNode[] = [up];
+  const neighborsCoords: NeighborNode[] = [up, right, down, left];
 
   if (isValid(up) || isValid(right)) {
-    neighborsCoords.push({ direction: Direction.UpRight, id: [x + 1, y - 1] });
+    neighborsCoords.push({ direction: Direction.DownLeft, id: [x + 1, y - 1] });
   }
-
-  neighborsCoords.push(right);
-
+  
   if (isValid(down) || isValid(right)) {
-    neighborsCoords.push({ direction: Direction.DownRight, id: [x + 1, y + 1] });
+    neighborsCoords.push({ direction: Direction.UpLeft, id: [x + 1, y + 1] });
   }
-
-  neighborsCoords.push(down);
 
   if (isValid(down) || isValid(left)) {
-    neighborsCoords.push({ direction: Direction.DownLeft, id: [x - 1, y + 1] });
+    neighborsCoords.push({ direction: Direction.UpRight, id: [x - 1, y + 1] });
   }
 
-  neighborsCoords.push(left);
-
   if (isValid(up) || isValid(left)) {
-    neighborsCoords.push({ direction: Direction.UpLeft, id: [x - 1, y - 1] });
+    neighborsCoords.push({ direction: Direction.DownRight, id: [x - 1, y - 1] });
   }
 
   const result: NeighborNode[] = [];
@@ -194,8 +181,7 @@ class PriorityQueue {
     const nodeAlreadyEnqueued = this.values.findIndex((x) => x.value.id === element.id);
 
     if (nodeAlreadyEnqueued !== -1) {
-      console.log("REMOVING EXISTING");
-      this.values.splice(nodeAlreadyEnqueued, 1);
+      throw new Error('Already seen node')
     }
 
     const newEntry = {
