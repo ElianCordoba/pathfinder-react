@@ -14,25 +14,29 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
       break mainLoop;
     }
 
-    for (const neighbor of getNeighbors(map, currentNode.value.id)) {
+    const neighbors = getNeighbors(map, currentNode.value.id);
+
+    for (const neighbor of neighbors) {
       if (neighbor.nodeId === startNode) {
         continue;
       }
 
+      const movedDiagonally = neighbor.direction > Direction.Right;
+      const constToVisitNeibour = getCost(currentNode.value.id, neighbor.nodeId, movedDiagonally);
       const wasNodeVisited = nodesVisited.get(neighbor.nodeId);
-      const cost = getDijkstraCost(currentNode, neighbor);
 
-      // The second check is in place in case we find a better path to and already seen node
-      if (!wasNodeVisited || cost < wasNodeVisited.cost) {
+      const newBestCost = currentNode.value.cost + constToVisitNeibour
+
+      if (!wasNodeVisited || newBestCost < wasNodeVisited.cost) {
         nodesToVisit.enqueue({
           id: neighbor.nodeId,
-          cost,
+          cost: newBestCost,
         });
 
         nodesVisited.set(neighbor.nodeId, {
           id: neighbor.nodeId,
           cameFrom: currentNode.value.id,
-          cost: cost,
+          cost: newBestCost,
           direction: neighbor.direction,
         });
       }
@@ -42,15 +46,6 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
   }
 
   return { path: reconstructPath(startNode, targetNode, nodesVisited) };
-}
-
-function getDijkstraCost(currentNode: Element, neighbor: any): number {
-  const costSoFar = currentNode.value.cost;
-
-  const movedDiagonally = neighbor.direction > Direction.Right;
-  // Distance between start node and neibour
-  const costOfVisitingNeibour = getCost(currentNode.value.id, neighbor.nodeId, movedDiagonally);
-  return costSoFar + costOfVisitingNeibour;
 }
 
 export function reconstructPath(startNode: NodeId, targetNode: NodeId, visitedNodes: Map<NodeId, VisitedNode>) {
@@ -124,7 +119,7 @@ export function getNeighbors(
   if (isValid(up) || isValid(right)) {
     neighborsCoords.push({ direction: Direction.DownLeft, id: [x + 1, y - 1] });
   }
-
+  
   if (isValid(down) || isValid(right)) {
     neighborsCoords.push({ direction: Direction.UpLeft, id: [x + 1, y + 1] });
   }
@@ -182,7 +177,7 @@ class PriorityQueue {
     const nodeAlreadyEnqueued = this.values.findIndex((x) => x.value.id === element.id);
 
     if (nodeAlreadyEnqueued !== -1) {
-      throw new Error("Already seen node");
+      throw new Error('Already seen node')
     }
 
     const newEntry = {

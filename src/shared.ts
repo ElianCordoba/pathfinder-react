@@ -37,7 +37,7 @@ export interface VisitedNode {
   // Direction taken from the last node to get here
   direction: Direction;
   // Total cost from the given path taken to here
-  costSoFar: number;
+  cost: number;
 }
 
 export  type PathfinderFunction = (map: MapValues, startNode: NodeId, targetNode: NodeId) => PathfinderSearch

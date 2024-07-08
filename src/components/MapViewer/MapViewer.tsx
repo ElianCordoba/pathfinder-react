@@ -116,7 +116,7 @@ export function MapViewer({
 
           return (
             <div id={id} key={id} className={getNodeClasses(y, id)}>
-              {visitedNode && <div>{visitedNode.costSoFar}</div>}
+              {visitedNode && <div>{visitedNode.cost}</div>}
               {visitedNode && <img className={"arrow"} style={styles} src={Arrow} alt="" />}
             </div>
           );
