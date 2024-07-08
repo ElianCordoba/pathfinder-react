@@ -12,7 +12,7 @@ import { parseId } from "./utils/utils";
 import { Kind, NodeId } from "./shared";
 // import { search as BF } from "./algos/breadthFirst";
 // import { search as x } from "./algos/dijkstra";
-import { search } from "./algos/dijkstra2";
+import { search } from "./algos/dijkstra";
 import { DebugInfoViewer } from "./components/DebugInfoViewer/DebugInfoViewer";
 import { highlighterReducer } from "./reducers/highightedNodesReducer";
 

@@ -3,8 +3,6 @@ import { PathNode, VisitedNode } from "../../shared";
 
 import "./DebugInfoViewer.css";
 
-const dataCellTypes = ["id", "came-from"] as const;
-
 export function DebugInfoViewer({
   nodesToVisit,
   nodesVisited,
