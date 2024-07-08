@@ -18,7 +18,7 @@ export function DebugInfoViewer({
     highlightNode({
       type: HighlighterAction.ShowHighlight,
       currentNode: nodeToVisit.id,
-      cameFromNode: nodeToVisit.cameFrom,
+      cameFromNode: "", //nodeToVisit.cameFrom, TODO
     });
   }
 
@@ -38,9 +38,9 @@ export function DebugInfoViewer({
           </tr>
           {nodesToVisit.map((nodeToVisit) => {
             return (
-              <tr onMouseEnter={() => showInfo(nodeToVisit)} key={`${nodeToVisit.id}-${nodeToVisit.cameFrom}`}>
+              <tr onMouseEnter={() => showInfo(nodeToVisit)} key={`${nodeToVisit.id}-${(nodeToVisit as any).cameFrom}`}>
                 <td>{nodeToVisit.id}</td>
-                <td>{nodeToVisit.cameFrom}</td>
+                {/* <td>{nodeToVisit.cameFrom}</td> */}
                 <td>{nodeToVisit.cost}</td>
               </tr>
             );

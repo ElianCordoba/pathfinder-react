@@ -26,8 +26,6 @@ export type NodeId = `${number}-${number}`;
 
 export interface PathNode {
   id: NodeId;
-  cameFrom: NodeId;
-  direction: Direction;
   cost: number
 }
 

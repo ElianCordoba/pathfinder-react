@@ -31,8 +31,6 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
         nodesToVisit.enqueue({
           id: neighbor.nodeId,
           cost: newBestCost,
-          cameFrom: currentNode.value.id,
-          direction: neighbor.direction,
         });
 
         nodesVisited.set(neighbor.nodeId, {
@@ -171,8 +169,6 @@ class PriorityQueue {
       value: {
         id: startNode,
         cost: 0,
-        cameFrom: undefined as any,
-        direction: undefined as any,
       },
     });
   }
