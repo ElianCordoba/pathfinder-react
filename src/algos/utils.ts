@@ -1,12 +1,41 @@
-import { Direction, MapValues, NodeId, Kind } from "../shared";
-import { assert, parseId } from "../utils/utils";
+import { Direction, MapValues, NodeId, Kind, PathNode, VisitedNode } from "../shared";
+import { assert, formatId, parseId } from "../utils/utils";
 
-export interface NeighborNode {
-  direction: Direction;
-  id: [x: number, y: number];
+export function reconstructPath(startNode: NodeId, targetNode: NodeId, visitedNodes: Map<NodeId, VisitedNode>) {
+  if (visitedNodes.size === 0) {
+    return [];
+  }
+
+  const start: Partial<VisitedNode> = { id: startNode, cost: 0 };
+  const target: Partial<VisitedNode> = { id: targetNode, cameFrom: targetNode };
+
+  let current = target;
+  const path: VisitedNode[] = [];
+
+  while (current.id !== start.id) {
+    current = visitedNodes.get(current.cameFrom!)!;
+
+    if (!current) {
+      break;
+    }
+
+    path.push(current as VisitedNode);
+  }
+
+  path.push(start as VisitedNode);
+  return path.reverse(); //.map(x => ({ ...x, direction: oppositeDirection(x.direction!) }))
 }
 
-export function getNeighbors(map: MapValues, node: NodeId): NeighborNode[] {
+interface NeighborNode {
+  direction: Direction;
+  id: [x: number, y: number];
+  // cost: number
+}
+
+export function getNeighbors(
+  map: MapValues,
+  node: NodeId
+): (NeighborNode & { nodeId: NodeId; stringDirection: string })[] {
   const [x, y] = node.split("-").map(Number);
 
   const maxX = map[0].length - 1;
@@ -26,10 +55,10 @@ export function getNeighbors(map: MapValues, node: NodeId): NeighborNode[] {
     }
   }
 
-  const up: NeighborNode = { direction: Direction.Up, id: [x, y - 1] };
-  const down: NeighborNode = { direction: Direction.Down, id: [x, y + 1] };
-  const left: NeighborNode = { direction: Direction.Left, id: [x - 1, y] };
-  const right: NeighborNode = { direction: Direction.Right, id: [x + 1, y] };
+  const up: NeighborNode = { direction: Direction.Down, id: [x, y - 1] }; //cost: getCost(node, formatId(x, y - 1))
+  const down: NeighborNode = { direction: Direction.Up, id: [x, y + 1] }; //cost: getCost(node, formatId(x, y + 1))
+  const left: NeighborNode = { direction: Direction.Right, id: [x - 1, y] }; //cost: getCost(node, formatId(x - 1, y))
+  const right: NeighborNode = { direction: Direction.Left, id: [x + 1, y] }; //cost: getCost(node, formatId(x + 1, y))
 
   // The diagonals are only included if we can reach it, for example:
   //
@@ -41,26 +70,25 @@ export function getNeighbors(map: MapValues, node: NodeId): NeighborNode[] {
   const neighborsCoords: NeighborNode[] = [up, right, down, left];
 
   if (isValid(up) || isValid(right)) {
-    neighborsCoords.push({ direction: Direction.UpRight, id: [x + 1, y - 1] });
+    neighborsCoords.push({ direction: Direction.DownLeft, id: [x + 1, y - 1] });
   }
 
   if (isValid(down) || isValid(right)) {
-    neighborsCoords.push({ direction: Direction.DownRight, id: [x + 1, y + 1] });
-  }  
+    neighborsCoords.push({ direction: Direction.UpLeft, id: [x + 1, y + 1] });
+  }
 
   if (isValid(down) || isValid(left)) {
-    neighborsCoords.push({ direction: Direction.DownLeft, id: [x - 1, y + 1] });
+    neighborsCoords.push({ direction: Direction.UpRight, id: [x - 1, y + 1] });
   }
 
   if (isValid(up) || isValid(left)) {
-    neighborsCoords.push({ direction: Direction.UpLeft, id: [x - 1, y - 1] });
+    neighborsCoords.push({ direction: Direction.DownRight, id: [x - 1, y - 1] });
   }
 
   const result: NeighborNode[] = [];
 
   for (const neighbor of neighborsCoords) {
     const [x, y] = neighbor.id;
-    // console.log(x, y, document.getElementById(formatId(x, y)));
 
     if (x < 0 || x > maxX || y < 0 || y > maxY) {
       continue;
@@ -77,29 +105,67 @@ export function getNeighbors(map: MapValues, node: NodeId): NeighborNode[] {
     result.push(neighbor);
   }
 
-  return result;
+  return result.map((x) => ({ ...x, nodeId: formatId(...x.id), stringDirection: Direction[x.direction] }));
 }
 
-// export function reconstructPath(startNode: NodeId, targetNode: NodeId, reached: Reached) {
-//   const start: Partial<PathNode> = { id: startNode }
-//   const target: Partial<PathNode> = { id: targetNode, cameFrom: targetNode }
+interface Element {
+  priority: number;
+  value: PathNode;
+}
 
-//   let current = target
-//   const path: PathNode[] = []
+export class PriorityQueue {
+  values: Element[] = [];
 
-//   while (current.id !== start.id) {
-//     current = reached.get(current.cameFrom!)!
+  constructor(startNode: NodeId) {
+    this.values.push({
+      priority: 0,
+      value: {
+        id: startNode,
+        cost: 0,
+      },
+    });
+  }
 
-//     if (!current) {
-//       break
-//     }
+  enqueue(element: PathNode) {
+    const nodeAlreadyEnqueued = this.values.findIndex((x) => x.value.id === element.id);
 
-//     path.push(current)
-//   }
+    if (nodeAlreadyEnqueued !== -1) {
+      throw new Error("Already seen node");
+    }
 
-//   path.push(start)
-//   return path.reverse().map(x => ({ ...x, direction: oppositeDirection(x.direction!) }))
-// }
+    const newEntry = {
+      priority: element.cost,
+      value: element,
+    };
+    const indexToInsert = this.findIndexToInsert(newEntry.priority);
+
+    this.values.splice(indexToInsert, 0, newEntry);
+  }
+
+  findIndexToInsert(targetPriority: number) {
+    let i = 0;
+    for (const element of this.values) {
+      if (targetPriority < element.priority) {
+        break;
+      }
+      i++;
+    }
+
+    return i;
+  }
+
+  dequeue() {
+    return this.values.shift()!.value;
+  }
+
+  isEmpty() {
+    return this.values.length === 0;
+  }
+
+  toArray() {
+    return this.values.map((x) => x.value);
+  }
+}
 
 export function getCost(a: NodeId, b: NodeId, isDiagonal: boolean) {
   const aCoords = parseId(a)

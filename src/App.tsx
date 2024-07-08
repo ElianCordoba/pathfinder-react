@@ -71,7 +71,7 @@ function App() {
   function automaticSeach() {
     intervalId.current = setInterval(() => {
       nextStep();
-    }, 100);
+    }, 50);
   }
 
   return (
