@@ -31,7 +31,7 @@ export function usePathfinder(
 
     if (nextStep.done) {
       searchDone.current = true;
-      console.log("Search done");
+      console.log("Search done", nextStep.value.path);
       setPath(nextStep.value.path);
       return;
     }

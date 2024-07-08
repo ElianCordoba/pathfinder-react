@@ -4,6 +4,7 @@ import { Direction, Kind, MapValues, NodeId, PathNode, VisitedNode } from "../..
 
 import Arrow from "../../assets/arrow.svg";
 import "./MapViewer.css";
+import { HighlighterState } from "../../reducers/highightedNodesReducer";
 
 export function MapViewer({
   map,
@@ -13,6 +14,7 @@ export function MapViewer({
   nodesToVisit,
   nodesVisited,
   path,
+  highlightingState,
 }: {
   map: MapValues;
   onNodeClick: (nodeId: NodeId) => void;
@@ -21,6 +23,7 @@ export function MapViewer({
   nodesToVisit: PathNode[];
   nodesVisited: VisitedNode[];
   path: VisitedNode[];
+  highlightingState: HighlighterState;
 }) {
   function handleClick(event: any) {
     const selectedTile = event.target.closest("div") as HTMLDivElement;
@@ -37,13 +40,18 @@ export function MapViewer({
   const numberOfRows = useMemo(() => map.length, [map]);
 
   function getNodeClasses(node: Kind, id: NodeId) {
-    console.log("class render");
     let classes = "spot";
 
     if (node == Kind.Empty) {
       classes += " empty";
     } else if (node == Kind.Wall) {
       classes += " wall";
+    }
+
+    if (id === highlightingState.currentNode) {
+      classes += " highlight-current";
+    } else if (id === highlightingState.cameFromNode) {
+      classes += " highlight-came-from";
     }
 
     if (id == startNode) {
@@ -83,17 +91,13 @@ export function MapViewer({
     }
   }
 
-  const _map = useMemo(() => {
-    console.log("Map memo", path);
-    return map;
-  }, [map, path]);
+  const _map = useMemo(() => map, [map, path]);
 
-  // const [_map, _setMap] = useState(map);
-  console.log("map render");
   return (
     <div
       className="map-container"
       style={{
+        margin: "50px auto",
         gridTemplateColumns: `repeat(${numberOfColumns}, 30px)`,
         gridTemplateRows: `repeat(${numberOfRows}, 30px)`,
       }}
@@ -113,7 +117,6 @@ export function MapViewer({
             <div id={id} key={id} className={getNodeClasses(y, id)}>
               {visitedNode && <div>{visitedNode.costSoFar}</div>}
               {visitedNode && <img className={"arrow"} style={styles} src={Arrow} alt="" />}
-              {/* {f ? f.direction : "no"} */}
             </div>
           );
         });

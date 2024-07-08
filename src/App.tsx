@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useReducer, useRef, useState } from "react";
 import "./App.css";
 
 import { MapViewer } from "./components/MapViewer/MapViewer";
@@ -13,12 +13,14 @@ import { Kind, NodeId } from "./shared";
 // import { search as BF } from "./algos/breadthFirst";
 // import { search as x } from "./algos/dijkstra";
 import { search } from "./algos/dijkstra2";
+import { DebugInfoViewer } from "./components/DebugInfoViewer/DebugInfoViewer";
+import { highlighterReducer } from "./reducers/highightedNodesReducer";
 
 function App() {
   const [startNode, setStartTile] = useState<NodeId | null>(null);
   const [finishNode, setFinishTile] = useState<NodeId | null>(null);
 
-  const [map, mapControls] = useMap(3, 3);
+  const [map, mapControls] = useMap(15, 10);
 
   const { step, nodesToVisit, nodesVisited, path, nextStep, resetSearch } = usePathfinder(
     search,
@@ -26,6 +28,11 @@ function App() {
     startNode,
     finishNode
   );
+
+  const [highlightingState, dispatchHighlightedNode] = useReducer(highlighterReducer, {
+    currentNode: "",
+    cameFromNode: "",
+  });
 
   const [isShiftPressed] = useIsKeyPressed("Shift");
 
@@ -77,16 +84,23 @@ function App() {
         nextStepHandler={nextStep}
         automaticSeachHandler={automaticSeach}
       />
-      <h1>Step: {step}</h1>
-      <MapViewer
-        map={map}
-        onNodeClick={onNodeClick}
-        startNode={startNode}
-        finishNode={finishNode}
-        nodesToVisit={nodesToVisit}
-        nodesVisited={nodesVisited}
-        path={path}
-      />
+      <div style={{ display: "flex" }}>
+        <DebugInfoViewer
+          nodesToVisit={nodesToVisit}
+          nodesVisited={nodesVisited}
+          highlightNode={dispatchHighlightedNode}
+        />
+        <MapViewer
+          map={map}
+          onNodeClick={onNodeClick}
+          startNode={startNode}
+          finishNode={finishNode}
+          nodesToVisit={nodesToVisit}
+          nodesVisited={nodesVisited}
+          path={path}
+          highlightingState={highlightingState}
+        />
+      </div>
     </>
   );
 }

@@ -44,3 +44,11 @@
 .path {
   background-color: blue;
 }
+
+.highlight-current {
+  border: 5px solid var(--highlighted-current)
+}
+
+.highlight-came-from {
+  border: 5px solid var(--highlighted-came-from)
+}

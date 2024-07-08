@@ -2,86 +2,84 @@ import { Direction, Kind, MapValues, NodeId, PathfinderSearch, PathNode, Visited
 import { assert, formatId } from "../utils/utils";
 import { getCost } from "./utils";
 
-
+// reached = nodesVisited = candidate paths = discovered nodes
 
 export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): PathfinderSearch {
-  const nodesToVisit = new PriorityQueue(startNode)
-  const nodesVisited: Map<NodeId, VisitedNode> = new Map()
+  const nodesToVisit = new PriorityQueue(startNode);
+  const nodesVisited: Map<NodeId, VisitedNode> = new Map();
 
   mainLoop: while (!nodesToVisit.isEmpty()) {
     const currentNode = nodesToVisit.dequeue();
 
     // Early exit
     if (currentNode.value.id === targetNode) {
-      break mainLoop
+      break mainLoop;
     }
 
-    const neighbors = getNeighbors(map, currentNode.value.id)
-    
+    const neighbors = getNeighbors(map, currentNode.value.id);
+
     for (const neighbor of neighbors) {
-      const neighborId = formatId(...neighbor.id)
-      const constToVisitNeibour = getCost(currentNode.value.id, neighborId, neighbor.direction > Direction.Right)
-      const wasNodeVisited = nodesVisited.get(neighborId)
-
-      if (constToVisitNeibour < (wasNodeVisited?.costSoFar || 0)) {
-        debugger
+      if (neighbor.nodeId === startNode) {
+        continue;
       }
-      
-      if (!wasNodeVisited || constToVisitNeibour < wasNodeVisited.costSoFar) { // || constToVisitNeibour < (wasNodeVisited.costSoFar || 0)
-        // const costSoFar = (visitedNodes.get(currentNode.value.id)?.costSoFar || 0) + constToVisitNeibour
-        let costSoFar = currentNode.value.cost + constToVisitNeibour
 
-        // if (!wasNodeVisited) {
-        //   costSoFar = currentNode.value.cost + constToVisitNeibour
-        // } else {
-        //   costSoFar = currentNode.value.cost
-        // }
+      // // Early exit
+      // if (neighbor.nodeId === targetNode) {
+      //   break mainLoop;
+      // }
 
-        nodesVisited.set(neighborId, {
-          id: neighborId,
-          cameFrom: currentNode.value.id,
-          costSoFar,
-          directionTaken: neighbor.direction
-        })
+      const movedDiagonally = neighbor.direction > Direction.Right;
+      const constToVisitNeibour = getCost(currentNode.value.id, neighbor.nodeId, movedDiagonally);
+      const wasNodeVisited = nodesVisited.get(neighbor.nodeId);
 
+      const newBestCost = currentNode.value.cost + constToVisitNeibour
+
+      if (!wasNodeVisited || newBestCost < wasNodeVisited.costSoFar) {
         nodesToVisit.enqueue({
-          id: neighborId,
-          cost: constToVisitNeibour,
+          id: neighbor.nodeId,
+          cost: newBestCost,
           cameFrom: currentNode.value.id,
           direction: currentNode.value.direction,
-        })
+        });
+
+        nodesVisited.set(neighbor.nodeId, {
+          id: neighbor.nodeId,
+          cameFrom: currentNode.value.id,
+          costSoFar: newBestCost,
+          directionTaken: currentNode.value.direction,
+        });
       }
     }
 
-    yield { nodesVisited: [...nodesVisited.values()] , nodesToVisit: nodesToVisit.toArray(), step: 0 }
+    yield { nodesVisited: [...nodesVisited.values()], nodesToVisit: nodesToVisit.toArray(), step: 0 };
   }
 
-  return { path: reconstructPath(startNode, targetNode, nodesVisited) }
+  return { path: reconstructPath(startNode, targetNode, nodesVisited) };
 }
 
 export function reconstructPath(startNode: NodeId, targetNode: NodeId, visitedNodes: Map<NodeId, VisitedNode>) {
-  if (!visitedNodes.size) {
-    return []
+  if (visitedNodes.size === 0) {
+    return [];
   }
-  
-  const start: Partial<VisitedNode> = { id: startNode, costSoFar: 0 }
-  const target: Partial<VisitedNode> = { id: targetNode, cameFrom: targetNode }
 
-  let current = target
-  const path: VisitedNode[] = []
+  const start: Partial<VisitedNode> = { id: startNode, costSoFar: 0 };
+  const target: Partial<VisitedNode> = { id: targetNode, cameFrom: targetNode };
+
+  let current = target;
+  const path: VisitedNode[] = [];
 
   while (current.id !== start.id) {
-    current = visitedNodes.get(current.cameFrom!)!
+    current = visitedNodes.get(current.cameFrom!)!;
 
     if (!current) {
-      break
+      break;
     }
 
-    path.push(current as VisitedNode)
+    path.push(current as VisitedNode);
   }
 
-  path.push(start as VisitedNode)
-  return path.reverse()//.map(x => ({ ...x, direction: oppositeDirection(x.direction!) }))
+  path.push(start as VisitedNode);
+  return path.reverse(); //.map(x => ({ ...x, direction: oppositeDirection(x.direction!) }))
 }
 
 interface NeighborNode {
@@ -90,7 +88,10 @@ interface NeighborNode {
   // cost: number
 }
 
-export function getNeighbors(map: MapValues, node: NodeId): NeighborNode[] {
+export function getNeighbors(
+  map: MapValues,
+  node: NodeId
+): (NeighborNode & { nodeId: NodeId; stringDirection: string })[] {
   const [x, y] = node.split("-").map(Number);
 
   const maxX = map[0].length - 1;
@@ -110,10 +111,10 @@ export function getNeighbors(map: MapValues, node: NodeId): NeighborNode[] {
     }
   }
 
-  const up: NeighborNode = { direction: Direction.Up, id: [x, y - 1] }; //cost: getCost(node, formatId(x, y - 1)) 
-  const down: NeighborNode = { direction: Direction.Down, id: [x, y + 1] }; //cost: getCost(node, formatId(x, y + 1)) 
-  const left: NeighborNode = { direction: Direction.Left, id: [x - 1, y] }; //cost: getCost(node, formatId(x - 1, y)) 
-  const right: NeighborNode = { direction: Direction.Right, id: [x + 1, y] }; //cost: getCost(node, formatId(x + 1, y)) 
+  const up: NeighborNode = { direction: Direction.Up, id: [x, y - 1] }; //cost: getCost(node, formatId(x, y - 1))
+  const down: NeighborNode = { direction: Direction.Down, id: [x, y + 1] }; //cost: getCost(node, formatId(x, y + 1))
+  const left: NeighborNode = { direction: Direction.Left, id: [x - 1, y] }; //cost: getCost(node, formatId(x - 1, y))
+  const right: NeighborNode = { direction: Direction.Right, id: [x + 1, y] }; //cost: getCost(node, formatId(x + 1, y))
 
   // The diagonals are only included if we can reach it, for example:
   //
@@ -122,19 +123,25 @@ export function getNeighbors(map: MapValues, node: NodeId): NeighborNode[] {
   //  - - - -
   // We can't go from A to B diagonally
 
-  const neighborsCoords: NeighborNode[] = [up, right, down, left];
+  const neighborsCoords: NeighborNode[] = [up];
 
   if (isValid(up) || isValid(right)) {
     neighborsCoords.push({ direction: Direction.UpRight, id: [x + 1, y - 1] });
   }
 
+  neighborsCoords.push(right);
+
   if (isValid(down) || isValid(right)) {
     neighborsCoords.push({ direction: Direction.DownRight, id: [x + 1, y + 1] });
-  }  
+  }
+
+  neighborsCoords.push(down);
 
   if (isValid(down) || isValid(left)) {
     neighborsCoords.push({ direction: Direction.DownLeft, id: [x - 1, y + 1] });
   }
+
+  neighborsCoords.push(left);
 
   if (isValid(up) || isValid(left)) {
     neighborsCoords.push({ direction: Direction.UpLeft, id: [x - 1, y - 1] });
@@ -144,7 +151,6 @@ export function getNeighbors(map: MapValues, node: NodeId): NeighborNode[] {
 
   for (const neighbor of neighborsCoords) {
     const [x, y] = neighbor.id;
-    // console.log(x, y, document.getElementById(formatId(x, y)));
 
     if (x < 0 || x > maxX || y < 0 || y > maxY) {
       continue;
@@ -161,7 +167,7 @@ export function getNeighbors(map: MapValues, node: NodeId): NeighborNode[] {
     result.push(neighbor);
   }
 
-  return result;
+  return result.map((x) => ({ ...x, nodeId: formatId(...x.id), stringDirection: Direction[x.direction] }));
 }
 
 interface Element {
@@ -179,12 +185,19 @@ class PriorityQueue {
         id: startNode,
         cost: 0,
         cameFrom: undefined as any,
-        direction: undefined as any
+        direction: undefined as any,
       },
     });
   }
 
   enqueue(element: PathNode) {
+    const nodeAlreadyEnqueued = this.values.findIndex((x) => x.value.id === element.id);
+
+    if (nodeAlreadyEnqueued !== -1) {
+      console.log("REMOVING EXISTING");
+      this.values.splice(nodeAlreadyEnqueued, 1);
+    }
+
     const newEntry = {
       priority: element.cost,
       value: element,

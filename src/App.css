@@ -1,3 +1,8 @@
+:root {
+  --highlighted-current: #ffd500;
+  --highlighted-came-from: #0055ff;
+}
+
 #root {
   display: flex;
   flex-direction: column;
