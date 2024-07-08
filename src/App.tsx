@@ -6,11 +6,13 @@ import { Controls } from "./components/controls/Controls";
 
 import { useIsKeyPressed } from "./hooks/useIsKeyPressed";
 import { useMap } from "./hooks/useMap";
-import { usePathfinder } from "./hooks/useBreadthFirstSearch";
+import { usePathfinder } from "./hooks/usePathfinder";
 
 import { parseId } from "./utils/utils";
 import { Kind, NodeId } from "./shared";
-import { search } from "./algos/breadthFirst";
+import { search as BF } from "./algos/breadthFirst";
+import { search as x } from "./algos/dijkstra";
+import { search } from "./algos/dijkstra2";
 
 function App() {
   const [startNode, setStartTile] = useState<NodeId | null>(null);
@@ -65,6 +67,7 @@ function App() {
       <Controls
         addColumnHandler={mapControls.addColumn}
         addRowHandler={mapControls.addRow}
+        clearMapHandler={mapControls.clearMap}
         resetHandler={reset}
         nextStepHandler={nextStep}
         automaticSeachHandler={automaticSeach}

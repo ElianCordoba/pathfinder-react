@@ -1,10 +1,10 @@
-import { Kind } from "../shared";
+import { Kind, PERCENTAGE_OF_WALLS } from "../shared";
 import { getRandomMap, getRandomSpot } from "./random";
 
 export class Map {
   values: Kind[][];
-  constructor(x: number, y: number) {
-    this.values = getRandomMap(x, y);
+  constructor(x: number, y: number, percentageOfWalls = PERCENTAGE_OF_WALLS) {
+    this.values = getRandomMap(x, y, percentageOfWalls);
   }
 
   get maxY() {

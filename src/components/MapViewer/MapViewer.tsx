@@ -109,6 +109,7 @@ export function MapViewer({
 
           return (
             <div id={id} key={id} className={getNodeClasses(y, id)}>
+              {reachedNode && <div>{reachedNode.costSoFar}</div>}
               {reachedNode && <img className={"arrow"} style={styles} src={Arrow} alt="" />}
               {/* {f ? f.direction : "no"} */}
             </div>

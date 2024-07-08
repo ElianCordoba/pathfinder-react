@@ -3,6 +3,7 @@ import "./Controls.css";
 export function Controls({
   addColumnHandler,
   addRowHandler,
+  clearMapHandler,
   resetHandler,
   nextStepHandler,
   automaticSeachHandler,
@@ -15,6 +16,10 @@ export function Controls({
 
       <button className="button" onClick={addRowHandler}>
         Add row
+      </button>
+
+      <button className="button" onClick={clearMapHandler}>
+        Clear map
       </button>
 
       <button className="button" onClick={resetHandler}>

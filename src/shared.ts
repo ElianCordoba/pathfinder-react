@@ -24,7 +24,7 @@ export type MapValues = Kind[][]
 
 export type NodeId = `${number}-${number}`;
 
-export type PathNode = { id: NodeId, cameFrom?: NodeId, direction?: Direction }
+export type PathNode = { id: NodeId, cameFrom?: NodeId, costSoFar: number, direction?: Direction }
 export type Reached = Map<NodeId,PathNode >
 
 export  type PathfinderFunction = (map: MapValues, startNode: NodeId, targetNode: NodeId) => PathfinderSearch
