@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import "./App.css";
 
 import { MapViewer } from "./components/MapViewer/MapViewer";
-import { Controls } from "./components/controls/Controls";
+import { Controls } from "./components/Controls/Controls";
 
 import { useIsKeyPressed } from "./hooks/useIsKeyPressed";
 import { useMap } from "./hooks/useMap";
