@@ -1,22 +1,12 @@
-import { Direction, Kind, MapValues, NodeId, PathfinderSearch, PathNode } from "../shared";
-import { assert, formatId, parseId } from "../utils/utils";
-import { PriorityQueue } from "./dijkstra";
+import { Direction, Kind, MapValues, NodeId, PathfinderSearch, PathNode, VisitedNode } from "../shared";
+import { assert, formatId } from "../utils/utils";
 import { getCost } from "./utils";
 
-interface VisitedNode {
-  // Current node ID
-  id: NodeId;
-  // Where did we came from to reach this node
-  cameFrom: NodeId;
-  // Direction taken from the last node to get here
-  directionTaken: Direction;
-  // Total cost from the given path taken to here
-  costSoFar: number;
-}
+
 
 export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): PathfinderSearch {
   const nodesToVisit = new PriorityQueue(startNode)
-  const visitedNodes: Map<NodeId, VisitedNode> = new Map()
+  const nodesVisited: Map<NodeId, VisitedNode> = new Map()
 
   mainLoop: while (!nodesToVisit.isEmpty()) {
     const currentNode = nodesToVisit.dequeue();
@@ -31,7 +21,7 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
     for (const neighbor of neighbors) {
       const neighborId = formatId(...neighbor.id)
       const constToVisitNeibour = getCost(currentNode.value.id, neighborId, neighbor.direction > Direction.Right)
-      const wasNodeVisited = visitedNodes.get(neighborId)
+      const wasNodeVisited = nodesVisited.get(neighborId)
 
       if (constToVisitNeibour < (wasNodeVisited?.costSoFar || 0)) {
         debugger
@@ -47,7 +37,7 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
         //   costSoFar = currentNode.value.cost
         // }
 
-        visitedNodes.set(neighborId, {
+        nodesVisited.set(neighborId, {
           id: neighborId,
           cameFrom: currentNode.value.id,
           costSoFar,
@@ -63,13 +53,17 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
       }
     }
 
-    yield { frontier: nodesToVisit.toArray(), reached: visitedNodes, step: 0 }
+    yield { nodesVisited: [...nodesVisited.values()] , nodesToVisit: nodesToVisit.toArray(), step: 0 }
   }
 
-  return { path: visitedNodes.size ? reconstructPath(startNode, targetNode, visitedNodes) : undefined }
+  return { path: reconstructPath(startNode, targetNode, nodesVisited) }
 }
 
 export function reconstructPath(startNode: NodeId, targetNode: NodeId, visitedNodes: Map<NodeId, VisitedNode>) {
+  if (!visitedNodes.size) {
+    return []
+  }
+  
   const start: Partial<VisitedNode> = { id: startNode, costSoFar: 0 }
   const target: Partial<VisitedNode> = { id: targetNode, cameFrom: targetNode }
 
@@ -168,4 +162,59 @@ export function getNeighbors(map: MapValues, node: NodeId): NeighborNode[] {
   }
 
   return result;
+}
+
+interface Element {
+  priority: number;
+  value: PathNode;
+}
+
+class PriorityQueue {
+  values: Element[] = [];
+
+  constructor(startNode: NodeId) {
+    this.values.push({
+      priority: 0,
+      value: {
+        id: startNode,
+        cost: 0,
+        cameFrom: undefined as any,
+        direction: undefined as any
+      },
+    });
+  }
+
+  enqueue(element: PathNode) {
+    const newEntry = {
+      priority: element.cost,
+      value: element,
+    };
+    const indexToInsert = this.findIndexToInsert(newEntry.priority);
+
+    this.values.splice(indexToInsert, 0, newEntry);
+  }
+
+  findIndexToInsert(targetPriority: number) {
+    let i = 0;
+    for (const element of this.values) {
+      if (targetPriority < element.priority) {
+        break;
+      }
+      i++;
+    }
+
+    return i;
+  }
+
+  dequeue() {
+    return this.values.shift()!;
+  }
+
+  isEmpty() {
+    return this.values.length === 0;
+  }
+
+  toArray() {
+    return this.values.map((x) => x.value);
+  }
 }

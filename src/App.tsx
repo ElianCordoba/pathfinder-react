@@ -10,8 +10,8 @@ import { usePathfinder } from "./hooks/usePathfinder";
 
 import { parseId } from "./utils/utils";
 import { Kind, NodeId } from "./shared";
-import { search as BF } from "./algos/breadthFirst";
-import { search as x } from "./algos/dijkstra";
+// import { search as BF } from "./algos/breadthFirst";
+// import { search as x } from "./algos/dijkstra";
 import { search } from "./algos/dijkstra2";
 
 function App() {
@@ -20,7 +20,12 @@ function App() {
 
   const [map, mapControls] = useMap(3, 3);
 
-  const [step, frontier, reached, path, nextStep, resetSearch] = usePathfinder(search, map, startNode, finishNode);
+  const { step, nodesToVisit, nodesVisited, path, nextStep, resetSearch } = usePathfinder(
+    search,
+    map,
+    startNode,
+    finishNode
+  );
 
   const [isShiftPressed] = useIsKeyPressed("Shift");
 
@@ -78,8 +83,8 @@ function App() {
         onNodeClick={onNodeClick}
         startNode={startNode}
         finishNode={finishNode}
-        frontier={frontier}
-        reached={reached}
+        nodesToVisit={nodesToVisit}
+        nodesVisited={nodesVisited}
         path={path}
       />
     </>

@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 
-import { Direction, Kind, MapValues, NodeId, PathNode, Reached } from "../../shared";
+import { Direction, Kind, MapValues, NodeId, PathNode, VisitedNode } from "../../shared";
 
 import Arrow from "../../assets/arrow.svg";
 import "./MapViewer.css";
@@ -10,17 +10,17 @@ export function MapViewer({
   onNodeClick,
   startNode,
   finishNode,
-  frontier,
-  reached,
+  nodesToVisit,
+  nodesVisited,
   path,
 }: {
   map: MapValues;
   onNodeClick: (nodeId: NodeId) => void;
   startNode: NodeId | null;
   finishNode: NodeId | null;
-  frontier: NodeId[];
-  reached: Reached;
-  path: PathNode[] | undefined;
+  nodesToVisit: PathNode[];
+  nodesVisited: VisitedNode[];
+  path: VisitedNode[];
 }) {
   function handleClick(event: any) {
     const selectedTile = event.target.closest("div") as HTMLDivElement;
@@ -53,9 +53,9 @@ export function MapViewer({
     } else if (path?.find((p) => p.id === id)) {
       console.log("path hitted");
       classes += " path";
-    } else if (frontier.find((f) => f === id)) {
+    } else if (nodesToVisit.find((f) => f.id === id)) {
       classes += " frontier";
-    } else if (reached.has(id)) {
+    } else if (nodesVisited.find((n) => n.id === id)) {
       classes += " reached";
     }
 
@@ -103,14 +103,16 @@ export function MapViewer({
         return x.map((y, yIndex) => {
           const id = `${yIndex}-${xIndex}` as NodeId;
 
-          const reachedNode = reached.get(id);
+          const visitedNode = nodesVisited.find((x) => x.id === id);
 
-          const styles = reachedNode ? { transform: `rotate(${getArrowRotation(reachedNode.direction!)}deg)` } : {};
+          const styles = visitedNode
+            ? { transform: `rotate(${getArrowRotation(visitedNode.directionTaken!)}deg)` }
+            : {};
 
           return (
             <div id={id} key={id} className={getNodeClasses(y, id)}>
-              {reachedNode && <div>{reachedNode.costSoFar}</div>}
-              {reachedNode && <img className={"arrow"} style={styles} src={Arrow} alt="" />}
+              {visitedNode && <div>{visitedNode.costSoFar}</div>}
+              {visitedNode && <img className={"arrow"} style={styles} src={Arrow} alt="" />}
               {/* {f ? f.direction : "no"} */}
             </div>
           );

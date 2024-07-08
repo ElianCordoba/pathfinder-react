@@ -1,5 +1,5 @@
-import { Direction, MapValues, NodeId, Kind, Reached, PathNode } from "../shared";
-import { assert, oppositeDirection, parseId } from "../utils/utils";
+import { Direction, MapValues, NodeId, Kind } from "../shared";
+import { assert, parseId } from "../utils/utils";
 
 export interface NeighborNode {
   direction: Direction;
@@ -80,26 +80,26 @@ export function getNeighbors(map: MapValues, node: NodeId): NeighborNode[] {
   return result;
 }
 
-export function reconstructPath(startNode: NodeId, targetNode: NodeId, reached: Reached) {
-  const start: Partial<PathNode> = { id: startNode }
-  const target: Partial<PathNode> = { id: targetNode, cameFrom: targetNode }
+// export function reconstructPath(startNode: NodeId, targetNode: NodeId, reached: Reached) {
+//   const start: Partial<PathNode> = { id: startNode }
+//   const target: Partial<PathNode> = { id: targetNode, cameFrom: targetNode }
 
-  let current = target
-  const path: PathNode[] = []
+//   let current = target
+//   const path: PathNode[] = []
 
-  while (current.id !== start.id) {
-    current = reached.get(current.cameFrom!)!
+//   while (current.id !== start.id) {
+//     current = reached.get(current.cameFrom!)!
 
-    if (!current) {
-      break
-    }
+//     if (!current) {
+//       break
+//     }
 
-    path.push(current)
-  }
+//     path.push(current)
+//   }
 
-  path.push(start)
-  return path.reverse().map(x => ({ ...x, direction: oppositeDirection(x.direction!) }))
-}
+//   path.push(start)
+//   return path.reverse().map(x => ({ ...x, direction: oppositeDirection(x.direction!) }))
+// }
 
 export function getCost(a: NodeId, b: NodeId, isDiagonal: boolean) {
   const aCoords = parseId(a)

@@ -24,15 +24,30 @@ export type MapValues = Kind[][]
 
 export type NodeId = `${number}-${number}`;
 
-export type PathNode = { id: NodeId, cameFrom?: NodeId, costSoFar: number, direction?: Direction }
-export type Reached = Map<NodeId,PathNode >
+export interface PathNode {
+  id: NodeId;
+  cameFrom: NodeId;
+  direction: Direction;
+  cost: number
+}
+
+export interface VisitedNode {
+  // Current node ID
+  id: NodeId;
+  // Where did we came from to reach this node
+  cameFrom: NodeId;
+  // Direction taken from the last node to get here
+  directionTaken: Direction;
+  // Total cost from the given path taken to here
+  costSoFar: number;
+}
 
 export  type PathfinderFunction = (map: MapValues, startNode: NodeId, targetNode: NodeId) => PathfinderSearch
 export type PathfinderSearch = Generator<
   // Value returned after each iteration
-  { step: number; frontier: NodeId[]; reached: Reached }, 
+  { step: number; nodesVisited: VisitedNode[]; nodesToVisit: PathNode[] }, 
   // Value returned after the iterations are done
-  { path: PathNode[] | undefined }, 
+  { path: VisitedNode[] }, 
   // Possible errors the generator may throw
   unknown
 >;
@@ -40,8 +55,8 @@ export type PathfinderSearch = Generator<
 export interface PathfinderHook {
   search: {
     step: number
-    frontier: NodeId[],
-    reached: Reached
+    nodesToVisit: PathNode[]
+    nodesVisited: VisitedNode[]
   },
   searchFns: {
     next: () => void;
