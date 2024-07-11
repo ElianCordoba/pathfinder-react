@@ -14,47 +14,40 @@ interface PathSegment {
 
 // Data structure that returns the most promising paths first
 class PriorityQueue {
-  values: { priority: number; value: PathSegment }[] = [];
+  values: PathSegment[] = [];
 
   constructor(startNode: NodeId) {
     this.values.push({
-      priority: 0,
-      value: {
         id: startNode,
         cameFrom: undefined,
         gCost: 0,
         hCost: 0,
         fCost: 0,
         direction: undefined
-      },
     });
   }
 
   dequeue() {
-    return this.values.shift()!.value;
+    return this.values.shift()!;
   }
 
   enqueue(element: PathSegment) {
-    const nodeAlreadyEnqueued = this.values.findIndex((x) => x.value.id === element.id);
+    const nodeAlreadyEnqueued = this.values.findIndex((x) => x.id === element.id);
 
     if (nodeAlreadyEnqueued !== -1) {
       throw new Error("Already seen node");
       // this.values.splice(nodeAlreadyEnqueued, 1)
     }
 
-    const newEntry = {
-      priority: element.fCost,
-      value: element,
-    };
-    const indexToInsert = this.findIndexToInsert(newEntry.priority);
+    const indexToInsert = this.findIndexToInsert(element.fCost);
 
-    this.values.splice(indexToInsert, 0, newEntry);
+    this.values.splice(indexToInsert, 0, element);
   }
 
   findIndexToInsert(targetPriority: number) {
     let i = 0;
     for (const element of this.values) {
-      if (targetPriority < element.priority) {
+      if (targetPriority < element.fCost) {
         break;
       }
       i++;
@@ -64,10 +57,10 @@ class PriorityQueue {
   }
 
   get(nodeId: NodeId) {
-    const found = this.values.find((x) => x.value.id === nodeId);
+    const found = this.values.find((x) => x.id === nodeId);
 
     if (found) {
-      return found.value;
+      return found
     } else {
       return undefined;
     }
@@ -75,10 +68,6 @@ class PriorityQueue {
 
   get hasNodesToVisit() {
     return this.values.length !== 0;
-  }
-
-  toArray() {
-    return this.values.map((x) => x.value);
   }
 }
 
@@ -132,10 +121,10 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
       nodesVisited: [...visited.values()].map((x) => ({
         cameFrom: x.cameFrom!,
         cost: x.fCost,
-        direction: x.direction,
+        direction: x.direction!,
         id: x.id,
       })),
-      nodesToVisit: toVisit.toArray().map(x => ({ 
+      nodesToVisit: toVisit.values.map(x => ({ 
         cost: x.fCost,
         id: x.id
       })),
