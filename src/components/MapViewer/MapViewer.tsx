@@ -112,7 +112,10 @@ export function MapViewer({
             console.log(visitedNode);
           }
 
-          const styles = visitedNode ? { transform: `rotate(${getArrowRotation(visitedNode.direction!)}deg)` } : {};
+          const styles =
+            visitedNode && visitedNode.direction
+              ? { transform: `rotate(${getArrowRotation(visitedNode.direction!)}deg)` }
+              : {};
 
           return (
             <div id={id} key={id} className={getNodeClasses(y, id)}>

@@ -10,9 +10,8 @@ import { usePathfinder } from "./hooks/usePathfinder";
 
 import { parseId } from "./utils/utils";
 import { Kind, NodeId } from "./shared";
-// import { search as BF } from "./algos/breadthFirst";
-// import { search as x } from "./algos/dijkstra";
-import { search } from "./algos/dijkstra";
+import { search } from "./algos/aStar";
+// import { search } from "./algos/dijkstra";
 import { DebugInfoViewer } from "./components/DebugInfoViewer/DebugInfoViewer";
 import { highlighterReducer } from "./reducers/highightedNodesReducer";
 
@@ -60,6 +59,11 @@ function App() {
     }
   }
 
+  function clearMap() {
+    mapControls.clearMap();
+    reset();
+  }
+
   function reset() {
     setStartTile(null);
     setFinishTile(null);
@@ -79,7 +83,7 @@ function App() {
       <Controls
         addColumnHandler={mapControls.addColumn}
         addRowHandler={mapControls.addRow}
-        clearMapHandler={mapControls.clearMap}
+        clearMapHandler={clearMap}
         resetHandler={reset}
         nextStepHandler={nextStep}
         automaticSeachHandler={automaticSeach}

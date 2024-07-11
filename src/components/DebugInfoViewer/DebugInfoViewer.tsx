@@ -31,20 +31,27 @@ export function DebugInfoViewer({
       <div className="table" onMouseLeave={() => hideInfo()}>
         <h1>Nodes to visit</h1>
         <table>
-          <tr>
-            <th className="current">Id</th>
-            <th className="came-from">Came from</th>
-            <th>Cost</th>
-          </tr>
-          {nodesToVisit.map((nodeToVisit) => {
-            return (
-              <tr onMouseEnter={() => showInfo(nodeToVisit)} key={`${nodeToVisit.id}-${(nodeToVisit as any).cameFrom}`}>
-                <td>{nodeToVisit.id}</td>
-                {/* <td>{nodeToVisit.cameFrom}</td> */}
-                <td>{nodeToVisit.cost}</td>
-              </tr>
-            );
-          })}
+          <thead>
+            <tr>
+              <th className="current">Id</th>
+              <th className="came-from">Came from</th>
+              <th>Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            {nodesToVisit.map((nodeToVisit) => {
+              return (
+                <tr
+                  onMouseEnter={() => showInfo(nodeToVisit)}
+                  key={`${nodeToVisit.id}-${(nodeToVisit as any).cameFrom}`}
+                >
+                  <td>{nodeToVisit.id}</td>
+                  {/* <td>{nodeToVisit.cameFrom}</td> */}
+                  <td>{nodeToVisit.cost}</td>
+                </tr>
+              );
+            })}
+          </tbody>
         </table>
       </div>
     </div>

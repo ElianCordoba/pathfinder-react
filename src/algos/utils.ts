@@ -130,7 +130,8 @@ export class PriorityQueue {
     const nodeAlreadyEnqueued = this.values.findIndex((x) => x.value.id === element.id);
 
     if (nodeAlreadyEnqueued !== -1) {
-      throw new Error("Already seen node");
+      // throw new Error("Already seen node");
+      this.values.splice(nodeAlreadyEnqueued, 1)
     }
 
     const newEntry = {

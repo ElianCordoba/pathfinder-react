@@ -14,6 +14,10 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
     }
 
     for (const neighbor of getNeighbors(map, currentNode.id)) {
+      if (nodesVisited.has(neighbor.nodeId)) {
+        debugger
+        continue
+      }
       if (neighbor.nodeId === startNode) {
         continue;
       }
