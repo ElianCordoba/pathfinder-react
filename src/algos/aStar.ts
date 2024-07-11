@@ -94,24 +94,24 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
 
     for (const neighbor of getNeighbors(map, current.id)) {
       // TODO move into get neibour
-      if (visited.has(neighbor.nodeId) || neighbor.nodeId === startNode) {
+      if (visited.has(neighbor.id) || neighbor.id === startNode) {
         continue;
       }
 
-      const wasVisited = toVisit.get(neighbor.nodeId);
+      const wasVisited = toVisit.get(neighbor.id);
 
       // This is in case we find a better path to and already seen node
-      const newPathToNeighbour = current.gCost + getDistance(current.id, neighbor.nodeId);
+      const newPathToNeighbour = current.gCost + getDistance(current.id, neighbor.id);
 
       if (!wasVisited || newPathToNeighbour < wasVisited.gCost) {
         const gCost = newPathToNeighbour;
-        const hCost = getDistance(neighbor.nodeId, targetNode);
+        const hCost = getDistance(neighbor.id, targetNode);
         const fCost = gCost + hCost;
 
         // neighbor.cameFrom = current
 
         const newEntry = {
-          id: neighbor.nodeId,
+          id: neighbor.id,
           gCost,
           hCost,
           fCost,
