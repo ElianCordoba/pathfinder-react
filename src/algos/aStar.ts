@@ -69,25 +69,21 @@ class PriorityQueue {
   get(nodeId: NodeId) {
     const found = this.values.find((x) => x.id === nodeId);
 
-    if (found) {
-      return found;
-    } else {
-      return undefined;
-    }
+   return found
   }
 
-  get hasNodesToVisit() {
-    return this.values.length !== 0;
+  get done() {
+    return this.values.length === 0;
   }
 }
 
 export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): PathfinderSearch {
-  // Open | Frontier
+  // Also known as open or frontier nodes
   const toVisit = new PriorityQueue(startNode);
-  // Closed | Reached
+  // Also known as closed or reached nodes
   const visited: Map<NodeId, PathSegment> = new Map();
 
-  mainLoop: while (toVisit.hasNodesToVisit) {
+  mainLoop: while (!toVisit.done) {
     const current = toVisit.dequeue();
     visited.set(current.id, current);
 
