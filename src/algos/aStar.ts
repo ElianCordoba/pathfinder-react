@@ -18,12 +18,12 @@ class PriorityQueue {
 
   constructor(startNode: NodeId) {
     this.values.push({
-        id: startNode,
-        cameFrom: undefined,
-        gCost: 0,
-        hCost: 0,
-        fCost: 0,
-        direction: undefined
+      id: startNode,
+      cameFrom: undefined,
+      gCost: 0,
+      hCost: 0,
+      fCost: 0,
+      direction: undefined,
     });
   }
 
@@ -31,17 +31,27 @@ class PriorityQueue {
     return this.values.shift()!;
   }
 
-  enqueue(element: PathSegment) {
-    const nodeAlreadyEnqueued = this.values.findIndex((x) => x.id === element.id);
+  enqueue(segment: PathSegment) {
+    const nodeAlreadyEnqueued = this.values.findIndex((x) => x.id === segment.id);
 
     if (nodeAlreadyEnqueued !== -1) {
       throw new Error("Already seen node");
       // this.values.splice(nodeAlreadyEnqueued, 1)
     }
 
-    const indexToInsert = this.findIndexToInsert(element.fCost);
+    const indexToInsert = this.findIndexToInsert(segment.fCost);
 
-    this.values.splice(indexToInsert, 0, element);
+    this.values.splice(indexToInsert, 0, segment);
+  }
+
+  update(segment: PathSegment) {
+    const index = this.values.findIndex((x) => x.id === segment.id);
+
+    if (index === -1) {
+      throw new Error("Index not found" + index);
+    }
+
+    this.values[index] = segment;
   }
 
   findIndexToInsert(targetPriority: number) {
@@ -60,7 +70,7 @@ class PriorityQueue {
     const found = this.values.find((x) => x.id === nodeId);
 
     if (found) {
-      return found
+      return found;
     } else {
       return undefined;
     }
@@ -104,15 +114,21 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
 
         // neighbor.cameFrom = current
 
+        const newEntry = {
+          id: neighbor.nodeId,
+          gCost,
+          hCost,
+          fCost,
+          cameFrom: current.id,
+          direction: neighbor.direction,
+        };
+
         if (!wasVisited) {
-          toVisit.enqueue({
-            id: neighbor.nodeId,
-            gCost,
-            hCost,
-            fCost,
-            cameFrom: current.id,
-            direction: neighbor.direction
-          });
+          toVisit.enqueue(newEntry);
+        } else {
+          if (newEntry.fCost < wasVisited.fCost) {
+            toVisit.update(newEntry);
+          }
         }
       }
     }
@@ -124,15 +140,15 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
         direction: x.direction!,
         id: x.id,
       })),
-      nodesToVisit: toVisit.values.map(x => ({ 
+      nodesToVisit: toVisit.values.map((x) => ({
         cost: x.fCost,
-        id: x.id
+        id: x.id,
       })),
       step: 0,
     };
   }
 
-  return { path: reconstructPath(startNode, targetNode, visited as any) };//
+  return { path: reconstructPath(startNode, targetNode, visited as any) }; //
 }
 
 function getDistance(p1: NodeId, p2: NodeId): number {

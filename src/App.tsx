@@ -65,8 +65,11 @@ function App() {
   }
 
   function reset() {
-    setStartTile(null);
-    setFinishTile(null);
+    if (isShiftPressed) {
+      setStartTile(null);
+      setFinishTile(null);
+    }
+
     resetSearch();
     clearInterval(intervalId.current);
   }

@@ -1,4 +1,4 @@
-export const PERCENTAGE_OF_WALLS = 20;
+export const PERCENTAGE_OF_WALLS = 30;
 
 export enum Kind {
   Empty,
