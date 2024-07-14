@@ -1,86 +1,9 @@
-import { Direction, MapValues, NodeId, PathfinderSearch, PathNode, VisitedNode } from "../shared";
+import { MapValues, NodeId, PathfinderSearch, PathSegment } from "../shared";
 import { parseId } from "../utils/utils";
-import { getCost, getNeighbors, reconstructPath } from "./utils";
-
-// A full path is a sequence of path segments
-interface PathSegment {
-  id: NodeId;
-  cameFrom: NodeId | undefined;
-  gCost: number;
-  hCost: number;
-  fCost: number;
-  direction: Direction | undefined;
-}
-
-// Data structure that returns the most promising paths first
-class PriorityQueue {
-  values: PathSegment[] = [];
-
-  constructor(startNode: NodeId) {
-    this.values.push({
-      id: startNode,
-      cameFrom: undefined,
-      gCost: 0,
-      hCost: 0,
-      fCost: 0,
-      direction: undefined,
-    });
-  }
-
-  dequeue() {
-    return this.values.shift()!;
-  }
-
-  enqueue(segment: PathSegment) {
-    const nodeAlreadyEnqueued = this.values.findIndex((x) => x.id === segment.id);
-
-    if (nodeAlreadyEnqueued !== -1) {
-      throw new Error("Already seen node");
-      // this.values.splice(nodeAlreadyEnqueued, 1)
-    }
-
-    const indexToInsert = this.findIndexToInsert(segment.fCost);
-
-    this.values.splice(indexToInsert, 0, segment);
-  }
-
-  update(segment: PathSegment) {
-    const index = this.values.findIndex((x) => x.id === segment.id);
-
-    if (index === -1) {
-      throw new Error("Index not found" + index);
-    }
-
-    this.values[index] = segment;
-  }
-
-  findIndexToInsert(targetPriority: number) {
-    let i = 0;
-    for (const element of this.values) {
-      if (targetPriority < element.fCost) {
-        break;
-      }
-      i++;
-    }
-
-    return i;
-  }
-
-  get(nodeId: NodeId) {
-    const found = this.values.find((x) => x.id === nodeId);
-
-   return found
-  }
-
-  get done() {
-    return this.values.length === 0;
-  }
-}
+import { getValidNeighbors, PriorityQueue, reconstructPath } from "./utils";
 
 export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): PathfinderSearch {
-  // Also known as open or frontier nodes
   const toVisit = new PriorityQueue(startNode);
-  // Also known as closed or reached nodes
   const visited: Map<NodeId, PathSegment> = new Map();
 
   mainLoop: while (!toVisit.done) {
@@ -92,23 +15,16 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
       break mainLoop;
     }
 
-    for (const neighbor of getNeighbors(map, current.id)) {
-      // TODO move into get neibour
-      if (visited.has(neighbor.id) || neighbor.id === startNode) {
-        continue;
-      }
-
-      const wasVisited = toVisit.get(neighbor.id);
+    for (const neighbor of getValidNeighbors(map, visited, startNode, current.id)) {
+      const seen = toVisit.get(neighbor.id);
 
       // This is in case we find a better path to and already seen node
-      const newPathToNeighbour = current.gCost + getDistance(current.id, neighbor.id);
+      const pathToNeighbour = current.gCost + getDistance(current.id, neighbor.id);
 
-      if (!wasVisited || newPathToNeighbour < wasVisited.gCost) {
-        const gCost = newPathToNeighbour;
+      if (!seen || pathToNeighbour < seen.gCost) {
+        const gCost = pathToNeighbour;
         const hCost = getDistance(neighbor.id, targetNode);
         const fCost = gCost + hCost;
-
-        // neighbor.cameFrom = current
 
         const newEntry = {
           id: neighbor.id,
@@ -119,12 +35,10 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
           direction: neighbor.direction,
         };
 
-        if (!wasVisited) {
+        if (!seen) {
           toVisit.enqueue(newEntry);
-        } else {
-          if (newEntry.fCost < wasVisited.fCost) {
-            toVisit.update(newEntry);
-          }
+        } else if (newEntry.fCost < seen.fCost) {
+          toVisit.update(newEntry);
         }
       }
     }
@@ -147,6 +61,7 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
   return { path: reconstructPath(startNode, targetNode, visited as any) }; //
 }
 
+// Euclidean distance
 function getDistance(p1: NodeId, p2: NodeId): number {
   const aCoords = parseId(p1);
   const bCoords = parseId(p2);

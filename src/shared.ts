@@ -62,3 +62,13 @@ export interface PathfinderHook {
     resert: () => void;
   }
 }
+
+// A full path is a sequence of path segments
+export interface PathSegment {
+  id: NodeId;
+  cameFrom: NodeId | undefined;
+  gCost: number;
+  hCost: number;
+  fCost: number;
+  direction: Direction | undefined;
+}

@@ -1,5 +1,73 @@
-import { Direction, MapValues, NodeId, Kind, PathNode, VisitedNode } from "../shared";
+import { Direction, MapValues, NodeId, Kind, PathNode, VisitedNode, PathSegment } from "../shared";
 import { assert, formatId, parseId } from "../utils/utils";
+
+/**
+ * Data structure that returns the most promising paths first
+ */
+export class PriorityQueue {
+  values: PathSegment[] = [];
+
+  constructor(startNode: NodeId) {
+    this.values.push({
+      id: startNode,
+      cameFrom: undefined,
+      gCost: 0,
+      hCost: 0,
+      fCost: 0,
+      direction: undefined,
+    });
+  }
+
+  dequeue() {
+    return this.values.shift()!;
+  }
+
+  enqueue(segment: PathSegment) {
+    const nodeAlreadyEnqueued = this.values.findIndex((x) => x.id === segment.id);
+
+    if (nodeAlreadyEnqueued !== -1) {
+      throw new Error("Already seen node");
+      // this.values.splice(nodeAlreadyEnqueued, 1)
+    }
+
+    const indexToInsert = this.findIndexToInsert(segment.fCost);
+
+    this.values.splice(indexToInsert, 0, segment);
+  }
+
+  update(segment: PathSegment) {
+    const index = this.values.findIndex((x) => x.id === segment.id);
+
+    if (index === -1) {
+      throw new Error("Index not found" + index);
+    }
+
+    this.values[index] = segment;
+  }
+
+  findIndexToInsert(targetPriority: number) {
+    let i = 0;
+    for (const element of this.values) {
+      // TODO handle case where fCost is the same
+      if (targetPriority < element.fCost) {
+        break;
+      }
+      i++;
+    }
+
+    return i;
+  }
+
+  get(nodeId: NodeId) {
+    const found = this.values.find((x) => x.id === nodeId);
+
+    return found;
+  }
+
+  get done() {
+    return this.values.length === 0;
+  }
+}
 
 export function reconstructPath(startNode: NodeId, targetNode: NodeId, visitedNodes: Map<NodeId, VisitedNode>) {
   if (visitedNodes.size === 0) {
@@ -26,23 +94,24 @@ export function reconstructPath(startNode: NodeId, targetNode: NodeId, visitedNo
   return path.reverse(); //.map(x => ({ ...x, direction: oppositeDirection(x.direction!) }))
 }
 
-interface NeighborNode {
+export interface NeighborNode {
   id: NodeId;
   x: number;
   y: number;
   direction: Direction;
 }
 
-export function getNeighbors(
-  map: MapValues,
-  node: NodeId
-): NeighborNode[] {
+/**
+ * This function get all the _valid_ neighbors of a given node, this means that automatically skips non-walkable nodes,
+ * as well as already visited ones and the start node
+ */
+export function getValidNeighbors(map: MapValues, visited: Map<NodeId, PathSegment>, startNode: NodeId, node: NodeId): NeighborNode[] {
   const [x, y] = node.split("-").map(Number);
 
   const maxX = map[0].length - 1;
   const maxY = map.length - 1;
 
-  function isValid(candidate: { x: number, y: number }) {
+  function isValid(candidate: { x: number; y: number }) {
     if (candidate.x < 0 || candidate.x > maxX || candidate.y < 0 || candidate.y > maxY) {
       return false;
     }
@@ -87,7 +156,7 @@ export function getNeighbors(
   const result: NeighborNode[] = [];
 
   for (const neighbor of neighborsCoords) {
-    const { x, y } = neighbor as NeighborNode
+    const { x, y } = neighbor as NeighborNode;
 
     if (x < 0 || x > maxX || y < 0 || y > maxY) {
       continue;
@@ -101,7 +170,13 @@ export function getNeighbors(
       continue;
     }
 
-    result.push({ ...neighbor, id: formatId(x, y) } as NeighborNode);
+    const id = formatId(x, y);
+
+    if (visited.has(id) || id === startNode) {
+      continue
+    }
+
+    result.push({ ...neighbor, id } as NeighborNode);
   }
 
   return result;
@@ -112,7 +187,7 @@ interface Element {
   value: PathNode;
 }
 
-export class PriorityQueue {
+export class PriorityQueue2 {
   values: Element[] = [];
 
   constructor(startNode: NodeId) {
@@ -130,7 +205,7 @@ export class PriorityQueue {
 
     if (nodeAlreadyEnqueued !== -1) {
       // throw new Error("Already seen node");
-      this.values.splice(nodeAlreadyEnqueued, 1)
+      this.values.splice(nodeAlreadyEnqueued, 1);
     }
 
     const newEntry = {
@@ -168,16 +243,15 @@ export class PriorityQueue {
 }
 
 export function getCost(a: NodeId, b: NodeId, isDiagonal: boolean) {
-  const aCoords = parseId(a)
-  const bCoords = parseId(b)
-  
-   // Manhattan distance on a square grid
-   const res = Math.abs(aCoords[0] - bCoords[0]) + Math.abs(aCoords[1] - bCoords[1])
+  const aCoords = parseId(a);
+  const bCoords = parseId(b);
 
-   if (isDiagonal) {
-    return res / 2
-   } else {
-    return res
-   }
+  // Manhattan distance on a square grid
+  const res = Math.abs(aCoords[0] - bCoords[0]) + Math.abs(aCoords[1] - bCoords[1]);
 
+  if (isDiagonal) {
+    return res / 2;
+  } else {
+    return res;
+  }
 }
