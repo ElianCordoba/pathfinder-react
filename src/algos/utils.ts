@@ -1,5 +1,5 @@
-import { Direction, MapValues, NodeId, Kind, PathNode, VisitedNode, PathSegment } from "../shared";
-import { assert, formatId, parseId } from "../utils/utils";
+import { Direction, MapValues, NodeId, Kind, VisitedNode, PathSegment } from "../shared";
+import { assert, formatId } from "../utils/utils";
 
 /**
  * Data structure that returns the most promising paths first
@@ -48,7 +48,7 @@ export class NodesQueue {
   findIndexToInsert(targetPriority: number) {
     let i = 0;
     for (const element of this.values) {
-      // TODO handle case where fCost is the same
+      // TODO: If the there is a match in fCost cost comparte the other 2 costs
       if (targetPriority < element.fCost) {
         break;
       }

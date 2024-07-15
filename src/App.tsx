@@ -11,8 +11,6 @@ import { usePathfinder } from "./hooks/usePathfinder";
 import { parseId } from "./utils/utils";
 import { Kind, NodeId } from "./shared";
 import { search } from "./algos/aStar";
-// import { search } from "./algos/dijkstra";
-import { DebugInfoViewer } from "./components/DebugInfoViewer/DebugInfoViewer";
 import { highlighterReducer } from "./reducers/highightedNodesReducer";
 
 function App() {
