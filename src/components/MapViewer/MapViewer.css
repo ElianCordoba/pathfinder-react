@@ -7,7 +7,8 @@
 .spot {
   border: 1px solid black;
   display: flex;
-  justify-content: center;
+  flex-direction: column-reverse;
+  justify-content: end;
   align-items: center;
 }
 
@@ -27,10 +28,12 @@
 
 .start {
   background-color: green;
+  cursor: grab
 }
 
 .finish {
   background-color: red;
+  cursor: grab
 }
 
 .frontier {

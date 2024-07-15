@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { MapValues, NodeId, PathNode, VisitedNode, PathfinderSearch, PathfinderFunction } from "../shared";
+import { MapValues, NodeId, VisitedNode, PathfinderSearch, PathfinderFunction, PathSegment } from "../shared";
 
 export function usePathfinder(
   algorithm: PathfinderFunction,
@@ -8,9 +8,9 @@ export function usePathfinder(
   finishNode: NodeId | null
 ) {
   const [step, setStep] = useState(0);
-  const [nodesToVisit, setNodesToVisit] = useState<PathNode[]>([]);
-  const [nodesVisited, setNodesVisited] = useState<VisitedNode[]>([]);
-  const [path, setPath] = useState<VisitedNode[]>([]);
+  const [nodesToVisit, setNodesToVisit] = useState<PathSegment[]>([]);
+  const [nodesVisited, setNodesVisited] = useState<VisitedNode>(new Map());
+  const [path, setPath] = useState<PathSegment[]>([]);
 
   let currentSearch = useRef<PathfinderSearch>();
   let searchDone = useRef(false);
@@ -46,7 +46,7 @@ export function usePathfinder(
   function resetSearch() {
     setStep(0);
     setNodesToVisit([]);
-    setNodesVisited([]);
+    setNodesVisited(new Map());
     setPath([]);
     currentSearch.current = undefined;
     searchDone.current = false;

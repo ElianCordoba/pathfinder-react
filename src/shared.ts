@@ -29,7 +29,7 @@ export interface PathNode {
   cost: number
 }
 
-export interface VisitedNode {
+export interface VisitedNode2 {
   // Current node ID
   id: NodeId;
   // Where did we came from to reach this node
@@ -43,11 +43,11 @@ export interface VisitedNode {
 export  type PathfinderFunction = (map: MapValues, startNode: NodeId, targetNode: NodeId) => PathfinderSearch
 export type PathfinderSearch = Generator<
   // Value returned after each iteration
-  { step: number; nodesVisited: VisitedNode[]; nodesToVisit: PathNode[] }, 
+  { step: number; nodesVisited: VisitedNode; nodesToVisit: PathSegment[] }, 
   // Value returned after the iterations are done
-  { path: VisitedNode[] }, 
+  { path: PathSegment[] }, 
   // Possible errors the generator may throw
-  unknown
+  never
 >;
 
 export interface PathfinderHook {
@@ -62,6 +62,8 @@ export interface PathfinderHook {
     resert: () => void;
   }
 }
+
+export type VisitedNode = Map<NodeId, PathSegment>
 
 // A full path is a sequence of path segments
 export interface PathSegment {

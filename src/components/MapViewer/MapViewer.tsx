@@ -1,11 +1,12 @@
 import { useMemo } from "react";
 
-import { Direction, Kind, MapValues, NodeId, PathNode, VisitedNode } from "../../shared";
+import { Direction, Kind, MapValues, NodeId, PathSegment, VisitedNode } from "../../shared";
 
 import Arrow from "../../assets/arrow.svg";
 import "./MapViewer.css";
 import { HighlighterState } from "../../reducers/highightedNodesReducer";
 
+const CELL_SIZE = 30;
 export function MapViewer({
   map,
   onNodeClick,
@@ -20,9 +21,9 @@ export function MapViewer({
   onNodeClick: (nodeId: NodeId) => void;
   startNode: NodeId | null;
   finishNode: NodeId | null;
-  nodesToVisit: PathNode[];
-  nodesVisited: VisitedNode[];
-  path: VisitedNode[];
+  nodesToVisit: PathSegment[];
+  nodesVisited: VisitedNode;
+  path: PathSegment[];
   highlightingState: HighlighterState;
 }) {
   function handleClick(event: any) {
@@ -62,7 +63,7 @@ export function MapViewer({
       classes += " path";
     } else if (nodesToVisit.find((f) => f.id === id)) {
       classes += " frontier";
-    } else if (nodesVisited.find((n) => n.id === id)) {
+    } else if (nodesVisited.has(id)) {
       classes += " reached";
     }
 
@@ -97,8 +98,8 @@ export function MapViewer({
       className="map-container"
       style={{
         margin: "50px auto",
-        gridTemplateColumns: `repeat(${numberOfColumns}, 30px)`,
-        gridTemplateRows: `repeat(${numberOfRows}, 30px)`,
+        gridTemplateColumns: `repeat(${numberOfColumns}, ${CELL_SIZE}px)`,
+        gridTemplateRows: `repeat(${numberOfRows}, ${CELL_SIZE}px)`,
       }}
       onClick={handleClick}
     >
@@ -106,11 +107,10 @@ export function MapViewer({
         return x.map((y, yIndex) => {
           const id = `${yIndex}-${xIndex}` as NodeId;
 
-          const visitedNode = nodesVisited.find((x) => x.id === id);
+          const visitedNode = nodesVisited.get(id);
+          const toVisitNode = nodesToVisit.find((f) => f.id === id);
 
-          if (visitedNode) {
-            console.log(visitedNode);
-          }
+          const cost = visitedNode?.fCost || toVisitNode?.fCost || undefined;
 
           const styles =
             visitedNode && visitedNode.direction
@@ -119,7 +119,7 @@ export function MapViewer({
 
           return (
             <div id={id} key={id} className={getNodeClasses(y, id)}>
-              {visitedNode && <div>{visitedNode.cost}</div>}
+              {cost && <div>{cost}</div>}
               {visitedNode && <img className={"arrow"} style={styles} src={Arrow} alt="" />}
             </div>
           );

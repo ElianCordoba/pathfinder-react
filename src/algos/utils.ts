@@ -4,7 +4,7 @@ import { assert, formatId, parseId } from "../utils/utils";
 /**
  * Data structure that returns the most promising paths first
  */
-export class PriorityQueue {
+export class NodesQueue {
   values: PathSegment[] = [];
 
   constructor(startNode: NodeId) {
@@ -69,16 +69,16 @@ export class PriorityQueue {
   }
 }
 
-export function reconstructPath(startNode: NodeId, targetNode: NodeId, visitedNodes: Map<NodeId, VisitedNode>) {
+export function reconstructPath(startNode: NodeId, targetNode: NodeId, visitedNodes: VisitedNode): PathSegment[] {
   if (visitedNodes.size === 0) {
     return [];
   }
 
-  const start: Partial<VisitedNode> = { id: startNode, cost: 0 };
-  const target: Partial<VisitedNode> = { id: targetNode, cameFrom: targetNode };
+  const start = { id: startNode, cost: 0 } as any
+  const target = { id: targetNode, cameFrom: targetNode } as Partial<PathSegment>;
 
-  let current = target;
-  const path: VisitedNode[] = [];
+  let current = target as PathSegment;
+  const path: PathSegment[] = [];
 
   while (current.id !== start.id) {
     current = visitedNodes.get(current.cameFrom!)!;
@@ -87,11 +87,11 @@ export function reconstructPath(startNode: NodeId, targetNode: NodeId, visitedNo
       break;
     }
 
-    path.push(current as VisitedNode);
+    path.push(current);
   }
 
-  path.push(start as VisitedNode);
-  return path.reverse(); //.map(x => ({ ...x, direction: oppositeDirection(x.direction!) }))
+  path.push(start);
+  return path.reverse();
 }
 
 export interface NeighborNode {

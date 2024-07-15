@@ -1,11 +1,12 @@
-import { MapValues, NodeId, PathfinderSearch, PathSegment } from "../shared";
+import { MapValues, NodeId, PathfinderSearch, VisitedNode } from "../shared";
 import { parseId } from "../utils/utils";
-import { getValidNeighbors, PriorityQueue, reconstructPath } from "./utils";
+import { getValidNeighbors, NodesQueue, reconstructPath } from "./utils";
 
 export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): PathfinderSearch {
-  const toVisit = new PriorityQueue(startNode);
-  const visited: Map<NodeId, PathSegment> = new Map();
+  const toVisit = new NodesQueue(startNode);
+  const visited: VisitedNode = new Map();
 
+  let step = 0;
   mainLoop: while (!toVisit.done) {
     const current = toVisit.dequeue();
     visited.set(current.id, current);
@@ -43,22 +44,16 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
       }
     }
 
+    step++;
+
     yield {
-      nodesVisited: [...visited.values()].map((x) => ({
-        cameFrom: x.cameFrom!,
-        cost: x.fCost,
-        direction: x.direction!,
-        id: x.id,
-      })),
-      nodesToVisit: toVisit.values.map((x) => ({
-        cost: x.fCost,
-        id: x.id,
-      })),
-      step: 0,
+      step,
+      nodesVisited: visited,
+      nodesToVisit: toVisit.values,
     };
   }
 
-  return { path: reconstructPath(startNode, targetNode, visited as any) }; //
+  return { path: reconstructPath(startNode, targetNode, visited) };
 }
 
 // Euclidean distance
