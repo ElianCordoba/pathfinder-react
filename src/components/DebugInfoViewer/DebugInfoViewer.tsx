@@ -1,5 +1,7 @@
 import { HighlighterAction } from "../../reducers/highightedNodesReducer";
-import { PathNode, VisitedNode } from "../../shared";
+import { VisitedNode } from "../../shared";
+
+type PathNode = any;
 
 import "./DebugInfoViewer.css";
 

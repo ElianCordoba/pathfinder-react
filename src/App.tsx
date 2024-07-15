@@ -92,11 +92,11 @@ function App() {
         automaticSeachHandler={automaticSeach}
       />
       <div style={{ display: "flex" }}>
-        <DebugInfoViewer
+        {/* <DebugInfoViewer
           nodesToVisit={nodesToVisit}
           nodesVisited={nodesVisited}
           highlightNode={dispatchHighlightedNode}
-        />
+        /> */}
         <MapViewer
           map={map}
           onNodeClick={onNodeClick}

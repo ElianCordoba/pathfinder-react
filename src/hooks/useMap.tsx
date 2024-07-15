@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 
 import { Map } from "../utils/map";
 
+// Wraps the Map class to sync the state with the component
 export function useMap(initialXSize: number, initialYSize: number) {
   let realMap = useRef(new Map(initialXSize, initialYSize));
 
