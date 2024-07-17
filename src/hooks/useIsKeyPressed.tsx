@@ -24,5 +24,5 @@ export function useIsKeyPressed(keyToTrack: string) {
     return () => removeShiftPressed();
   }, []);
 
-  return [isKeyPressed];
+  return isKeyPressed;
 }

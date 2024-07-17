@@ -6,7 +6,7 @@ export function assert(condition: boolean) {
   }
 }
 
-export function parseId(id: NodeId): [x: number, y: number] {
+export function parseId(id: string): [x: number, y: number] {
   const [x, y] = id.split("-").map(Number);
   return [x, y];
 }

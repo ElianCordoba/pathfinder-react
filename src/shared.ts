@@ -1,4 +1,5 @@
 export const PERCENTAGE_OF_WALLS = 30;
+export const MAX_MAP_SIZE = 750
 
 export enum Kind {
   Empty,
@@ -21,6 +22,13 @@ export enum Direction {
 }
 
 export type MapValues = Kind[][]
+export interface MapControls {
+  addColumn: () => void;
+  addRow: () => void;
+  toggleNode: (x: number, y: number) => void;
+  clearMap: () => void;
+  randomizeMap: () => void;
+}
 
 export type NodeId = `${number}-${number}`;
 
@@ -33,19 +41,6 @@ export type PathfinderSearch = Generator<
   // Possible errors the generator may throw
   never
 >;
-
-// export interface PathfinderHook {
-//   search: {
-//     step: number
-//     nodesToVisit: PathNode[]
-//     nodesVisited: VisitedNode[]
-//   },
-//   searchFns: {
-//     next: () => void;
-//     prev: () => void;
-//     resert: () => void;
-//   }
-// }
 
 export type VisitedNode = Map<NodeId, PathSegment>
 

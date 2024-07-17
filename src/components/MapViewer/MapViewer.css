@@ -1,5 +1,5 @@
 .map-container {
-  margin: auto;
+  align-self: center;
   display: grid;
   font-size: 10px;
 }

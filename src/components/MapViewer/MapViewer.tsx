@@ -1,31 +1,19 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-import { Direction, Kind, MapValues, NodeId, PathSegment, VisitedNode } from "../../shared";
+import { Direction, Kind, NodeId } from "../../shared";
 
 import Arrow from "../../assets/arrow.svg";
 import "./MapViewer.css";
-import { HighlighterState } from "../../reducers/highightedNodesReducer";
+import { parseId } from "../../utils/utils";
+import { useIsKeyPressed } from "../../hooks/useIsKeyPressed";
+import { useAppState, usePathfinderState } from "../../state";
 
-const CELL_SIZE = 30;
-export function MapViewer({
-  map,
-  onNodeClick,
-  startNode,
-  finishNode,
-  nodesToVisit,
-  nodesVisited,
-  path,
-  highlightingState,
-}: {
-  map: MapValues;
-  onNodeClick: (nodeId: NodeId) => void;
-  startNode: NodeId | null;
-  finishNode: NodeId | null;
-  nodesToVisit: PathSegment[];
-  nodesVisited: VisitedNode;
-  path: PathSegment[];
-  highlightingState: HighlighterState;
-}) {
+export function MapViewer() {
+  const { map, mapControls, mapInstance, startNode, setStartNode, targetNode, setTargetNode } = useAppState();
+
+  const { nodesToVisit, nodesVisited, path } = usePathfinderState();
+  const isShiftPressed = useIsKeyPressed("Shift");
+
   function handleClick(event: any) {
     const selectedTile = event.target.closest("div") as HTMLDivElement;
     const nodeId = selectedTile.id as any;
@@ -34,7 +22,25 @@ export function MapViewer({
       return;
     }
 
-    onNodeClick(nodeId);
+    const [x, y] = parseId(nodeId);
+
+    if (isShiftPressed) {
+      // Toggle wall / empty
+      mapControls.toggleNode(x, y);
+    } else {
+      // Set start / finish nodes
+      const node = mapInstance.at(x, y);
+
+      if (node === Kind.Wall || nodeId == startNode || nodeId == targetNode) {
+        return;
+      }
+
+      if (!startNode) {
+        setStartNode(nodeId);
+      } else if (!targetNode) {
+        setTargetNode(nodeId);
+      }
+    }
   }
 
   const numberOfColumns = useMemo(() => map[0].length, [map]);
@@ -49,15 +55,9 @@ export function MapViewer({
       classes += " wall";
     }
 
-    if (id === highlightingState.currentNode) {
-      classes += " highlight-current";
-    } else if (id === highlightingState.cameFromNode) {
-      classes += " highlight-came-from";
-    }
-
     if (id == startNode) {
       classes += " start";
-    } else if (id == finishNode) {
+    } else if (id == targetNode) {
       classes += " finish";
     } else if (path?.find((p) => p.id === id)) {
       classes += " path";
@@ -70,36 +70,71 @@ export function MapViewer({
     return classes;
   }
 
-  function getArrowRotation(direction: Direction) {
-    switch (direction) {
-      case Direction.Up:
-        return 0;
-      case Direction.UpRight:
-        return 45;
-      case Direction.Right:
-        return 90;
-      case Direction.DownRight:
-        return 135;
-      case Direction.Down:
-        return 180;
-      case Direction.DownLeft:
-        return 225;
-      case Direction.Left:
-        return 270;
-      case Direction.UpLeft:
-        return 315;
+  const _map = useMemo(() => map, [map, path]);
+
+  // Dragging
+
+  function handleOnDrag(event: any, id: NodeId) {
+    event.preventDefault();
+
+    if (id !== startNode && id !== targetNode) {
+      return;
     }
+
+    setDraggingNode(id);
+    console.log("Dragging", id);
   }
 
-  const _map = useMemo(() => map, [map, path]);
+  function handleOnDrop(event: any) {
+    event.preventDefault();
+
+    if (!draggingNode) {
+      return;
+    }
+
+    const dropTarget = event.target.closest("div") as HTMLDivElement;
+
+    if (!dropTarget || !dropTarget.classList.contains("spot")) {
+      return;
+    }
+
+    const nodeId = dropTarget.id;
+
+    if (!nodeId || nodeId === startNode || nodeId === targetNode) {
+      return;
+    }
+
+    // TODO Pass to this component the map instance
+    const [x, y] = parseId(nodeId);
+    const node = map[y][x];
+
+    if (node === Kind.Wall) {
+      return;
+    }
+
+    console.log("Dropping", nodeId);
+  }
+
+  const [draggingNode, setDraggingNode] = useState<NodeId>();
+
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  const height = gridRef.current?.clientHeight || 0;
+
+  // -4 is the border
+  const rawSize = Math.min(height / numberOfRows, window.innerWidth / numberOfColumns) - 4;
+
+  // With min of 15px
+  const size = Math.round(Math.max(15, rawSize));
 
   return (
     <div
+      ref={gridRef}
       className="map-container"
       style={{
-        margin: "50px auto",
-        gridTemplateColumns: `repeat(${numberOfColumns}, ${CELL_SIZE}px)`,
-        gridTemplateRows: `repeat(${numberOfRows}, ${CELL_SIZE}px)`,
+        height: "100%",
+        gridTemplateColumns: `repeat(${numberOfColumns}, ${size}px)`,
+        gridTemplateRows: `repeat(${numberOfRows}, ${size}px)`,
       }}
       onClick={handleClick}
     >
@@ -118,7 +153,13 @@ export function MapViewer({
               : {};
 
           return (
-            <div id={id} key={id} className={getNodeClasses(y, id)}>
+            <div
+              // onMouseDown={(e) => handleOnDrag(e, id)}
+              // onMouseUp={handleOnDrop}
+              id={id}
+              key={id}
+              className={getNodeClasses(y, id)}
+            >
               {cost && <div>{cost}</div>}
               {visitedNode && <img className={"arrow"} style={styles} src={Arrow} alt="" />}
             </div>
@@ -127,4 +168,25 @@ export function MapViewer({
       })}
     </div>
   );
+}
+
+function getArrowRotation(direction: Direction) {
+  switch (direction) {
+    case Direction.Up:
+      return 0;
+    case Direction.UpRight:
+      return 45;
+    case Direction.Right:
+      return 90;
+    case Direction.DownRight:
+      return 135;
+    case Direction.Down:
+      return 180;
+    case Direction.DownLeft:
+      return 225;
+    case Direction.Left:
+      return 270;
+    case Direction.UpLeft:
+      return 315;
+  }
 }

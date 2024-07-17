@@ -6,10 +6,24 @@
 #root {
   display: flex;
   flex-direction: column;
+  height: 100%;
+}
+
+html {
+  height: 100%;
+  max-height: 100vh;
 }
 
 body {
+  margin: 0;
   color: white;
   font-family: monospace;
-  background-color: rgb(50, 50, 50);
+  height: 100%;
+  background: rgb(34,193,195);
+  background: linear-gradient(180deg, rgba(34,193,195,1) 0%, rgba(253,187,45,1) 100%);
+
+  .controls {
+    display: flex;
+    justify-content: space-around;
+  }
 }

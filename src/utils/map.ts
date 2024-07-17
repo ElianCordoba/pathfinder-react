@@ -1,4 +1,4 @@
-import { Kind, PERCENTAGE_OF_WALLS } from "../shared";
+import { Kind, MapValues, MAX_MAP_SIZE, PERCENTAGE_OF_WALLS } from "../shared";
 import { getRandomMap, getRandomSpot } from "./random";
 
 export class Map {
@@ -25,16 +25,27 @@ export class Map {
     return node;
   }
 
-  addColum() {
+  addColum(): MapValues | false {
+    const mapSize = this.maxY + 1 * this.maxX
+    if (mapSize > MAX_MAP_SIZE) {
+      return false
+    }
+
     const newMap = this.values.map((x) => {
       x.push(getRandomSpot());
       return x;
     });
 
+    
     return (this.values = newMap);
   }
 
-  addRow() {
+  addRow(): MapValues | false {
+    const mapSize = this.maxY * this.maxX + 1
+    if (mapSize > MAX_MAP_SIZE) {
+      return false
+    }
+
     const numberOfColumns = this.values[0].length;
     const newRow = new Array(numberOfColumns).fill(0).map(() => getRandomSpot());
 
