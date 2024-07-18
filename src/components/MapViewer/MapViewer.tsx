@@ -142,16 +142,6 @@ export function MapViewer() {
         return x.map((y, yIndex) => {
           const id = `${yIndex}-${xIndex}` as NodeId;
 
-          const visitedNode = nodesVisited.get(id);
-          const toVisitNode = nodesToVisit.find((f) => f.id === id);
-
-          const cost = visitedNode?.fCost || toVisitNode?.fCost || undefined;
-
-          const styles =
-            visitedNode && visitedNode.direction
-              ? { transform: `rotate(${getArrowRotation(visitedNode.direction!)}deg)` }
-              : {};
-
           return (
             <div
               // onMouseDown={(e) => handleOnDrag(e, id)}
@@ -160,13 +150,34 @@ export function MapViewer() {
               key={id}
               className={getNodeClasses(y, id)}
             >
-              {cost && <div>{cost}</div>}
-              {visitedNode && <img className={"arrow"} style={styles} src={Arrow} alt="" />}
+              {isShiftPressed && <NodeDebugInfo id={id} />}
             </div>
           );
         });
       })}
     </div>
+  );
+}
+
+function NodeDebugInfo({ id }: { id: NodeId }) {
+  const { nodesVisited, nodesToVisit } = usePathfinderState();
+
+  const visitedNode = nodesVisited.get(id);
+  const toVisitNode = nodesToVisit.find((f) => f.id === id);
+
+  const cost = visitedNode?.fCost || toVisitNode?.fCost || undefined;
+
+  let styles = {};
+
+  if (visitedNode && visitedNode.direction) {
+    styles = { transform: `rotate(${getArrowRotation(visitedNode.direction!)}deg)` };
+  }
+
+  return (
+    <>
+      {cost && <div>{cost}</div>}
+      {visitedNode && <img className={"arrow"} style={styles} src={Arrow} alt="" />}
+    </>
   );
 }
 
