@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { MapControls, MapValues, NodeId, PathfinderSearch, PathSegment } from "./shared";
+import { MapValues, NodeId, PathfinderSearch, PathSegment } from "./shared";
 import { Map as MapClass } from "./utils/map";
 import { search } from "./algos/aStar";
 import { parseId } from "./utils/utils";
@@ -8,11 +8,8 @@ export interface AppState {
   initializeMap: (x: number, y: number) => void;
   map: MapValues;
   mapInstance: MapClass;
-  setMap: (map: MapValues) => void;
   startNode: NodeId | null;
-  setStartNode: (node: NodeId | null) => void;
   targetNode: NodeId | null;
-  setTargetNode: (node: NodeId | null) => void;
 
   // Map controls
   addColumn: () => void;
@@ -78,20 +75,15 @@ const useAppState = create<AppState>((set, get) => ({
     set({ mapInstance });
   },
   map: [[]],
-  setMap: (map: MapValues) => set({ map }),
   mapInstance: {} as any,
   startNode: null,
-  setStartNode: (node: NodeId | null) => set({ startNode: node }),
   targetNode: null,
-  setTargetNode: (node: NodeId | null) => set({ targetNode: node }),
 }));
 
 interface PathfinderState {
   step: number;
   nodesToVisit: PathSegment[];
-  setNodesToVisit: (nodesToVisit: PathSegment[]) => void;
   nodesVisited: Map<string, PathSegment>;
-  setNodesVisited: (nodesVisited: Map<string, PathSegment>) => void;
   path: PathSegment[];
 
   currentSearch: PathfinderSearch | null;
@@ -106,11 +98,8 @@ interface PathfinderState {
 export const usePathfinderState = create<PathfinderState>((set, get) => ({
   step: -1,
   nodesToVisit: [],
-  setNodesToVisit: (nodesToVisit: PathSegment[]) => set({ nodesToVisit }),
   nodesVisited: new Map(),
-  setNodesVisited: (nodesVisited: Map<string, PathSegment>) => set({ nodesVisited }),
   path: [],
-
   currentSearch: null,
   nextStep: () => {
     // This state usage is required when reading a state from another state
