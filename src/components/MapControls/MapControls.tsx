@@ -3,7 +3,7 @@ import { useAppState } from "../../state";
 import "./MapControls.css";
 
 export function MapControls() {
-  const { addColumn, addRow, clearMap, randomizeMap } = useAppState().mapControls;
+  const { addColumn, addRow, clearMap, randomizeMap } = useAppState();
 
   return (
     <div className="controls-layout map-controls">

@@ -2,80 +2,84 @@ import { create } from "zustand";
 import { MapControls, MapValues, NodeId, PathfinderSearch, PathSegment } from "./shared";
 import { Map as MapClass } from "./utils/map";
 import { search } from "./algos/aStar";
+import { parseId } from "./utils/utils";
 
 export interface AppState {
   initializeMap: (x: number, y: number) => void;
   map: MapValues;
   mapInstance: MapClass;
   setMap: (map: MapValues) => void;
-  mapControls: MapControls;
-  setMapControls: (mapControls: MapControls) => void;
   startNode: NodeId | null;
   setStartNode: (node: NodeId | null) => void;
   targetNode: NodeId | null;
   setTargetNode: (node: NodeId | null) => void;
+
+  // Map controls
+  addColumn: () => void;
+  addRow: () => void;
+  toggleNode: (id: NodeId) => void;
+  clearMap: () => void;
+  randomizeMap: () => void;
 }
 
 const useAppState = create<AppState>((set, get) => ({
+  addColumn() {
+    const didAddColumn = get().mapInstance.addColum();
+
+    if (!didAddColumn) {
+      console.log("Max map size reached");
+      return;
+    }
+    set({ map: didAddColumn });
+    usePathfinderState.getState().stopAutomaticSearch();
+  },
+  addRow() {
+    const didAddRow = get().mapInstance.addRow();
+
+    if (!didAddRow) {
+      console.log("Max map size reached");
+      return;
+    }
+    set({ map: didAddRow });
+    usePathfinderState.getState().stopAutomaticSearch();
+  },
+  toggleNode(nodeId: NodeId) {
+    const [x, y] = parseId(nodeId);
+    set({ map: get().mapInstance.toogleNode(x, y) });
+    usePathfinderState.getState().stopAutomaticSearch();
+  },
+  clearMap: () => {
+    const { maxX, maxY } = get().mapInstance;
+    const newMapInstance = new MapClass(maxX, maxY, 0);
+
+    set({ map: newMapInstance.values });
+    set({ mapInstance: newMapInstance });
+
+    usePathfinderState.getState().resetSearch(true);
+    usePathfinderState.getState().stopAutomaticSearch();
+  },
+  randomizeMap: () => {
+    const { maxX, maxY } = get().mapInstance;
+    const newMapInstance = new MapClass(maxX, maxY);
+
+    set({ map: newMapInstance.values });
+    set({ mapInstance: newMapInstance });
+
+    set({ startNode: null });
+    set({ targetNode: null });
+
+    usePathfinderState.getState().resetSearch(true);
+    usePathfinderState.getState().stopAutomaticSearch();
+  },
   initializeMap: (x: number, y: number) => {
     const mapInstance = new MapClass(x, y);
-    const mapControls: MapControls = {
-      addColumn: () => {
-        const didAddColumn = mapInstance.addColum();
-
-        if (!didAddColumn) {
-          console.log("Max map size reached");
-          return;
-        }
-        set({ map: didAddColumn });
-        usePathfinderState.getState().stopAutomaticSearch();
-      },
-      addRow: () => {
-        const didAddRow = mapInstance.addRow();
-
-        if (!didAddRow) {
-          console.log("Max map size reached");
-          return;
-        }
-        set({ map: didAddRow });
-        usePathfinderState.getState().stopAutomaticSearch();
-      },
-      toggleNode: (x: number, y: number) => {
-        set({ map: get().mapInstance.toogleNode(x, y) });
-        usePathfinderState.getState().stopAutomaticSearch();
-      },
-      clearMap: () => {
-        const newMapInstance = new MapClass(mapInstance.maxX, mapInstance.maxY, 0);
-
-        set({ map: newMapInstance.values });
-        set({ mapInstance: newMapInstance });
-
-        usePathfinderState.getState().resetSearch(true);
-        usePathfinderState.getState().stopAutomaticSearch();
-      },
-      randomizeMap: () => {
-        const newMapInstance = new MapClass(mapInstance.maxX, mapInstance.maxY);
-
-        set({ map: newMapInstance.values });
-        set({ mapInstance: newMapInstance });
-
-        set({ startNode: null });
-        set({ targetNode: null });
-
-        usePathfinderState.getState().resetSearch(true);
-        usePathfinderState.getState().stopAutomaticSearch();
-      },
-    };
 
     set({ map: mapInstance.values });
-    set({ mapControls });
     set({ mapInstance });
   },
   map: [[]],
   setMap: (map: MapValues) => set({ map }),
   mapInstance: {} as any,
-  mapControls: {} as any,
-  setMapControls: (mapControls: MapControls) => set({ mapControls }),
   startNode: null,
   setStartNode: (node: NodeId | null) => set({ startNode: node }),
   targetNode: null,

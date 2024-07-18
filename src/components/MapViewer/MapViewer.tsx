@@ -9,7 +9,7 @@ import { useIsKeyPressed } from "../../hooks/useIsKeyPressed";
 import { useAppState, usePathfinderState } from "../../state";
 
 export function MapViewer() {
-  const { map, mapControls, mapInstance, startNode, setStartNode, targetNode, setTargetNode } = useAppState();
+  const { map, mapInstance, startNode, setStartNode, targetNode, setTargetNode, toggleNode } = useAppState();
 
   const { nodesToVisit, nodesVisited, path } = usePathfinderState();
   const isShiftPressed = useIsKeyPressed("Shift");
@@ -22,12 +22,11 @@ export function MapViewer() {
       return;
     }
 
-    const [x, y] = parseId(nodeId);
-
     if (isShiftPressed) {
       // Toggle wall / empty
-      mapControls.toggleNode(x, y);
+      toggleNode(nodeId);
     } else {
+      const [x, y] = parseId(nodeId);
       // Set start / finish nodes
       const node = mapInstance.at(x, y);
 
