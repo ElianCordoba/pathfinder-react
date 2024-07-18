@@ -1,27 +1,17 @@
-import { useRef } from "react";
-
-import { MapViewerActions } from "../../reducers/mapReducer";
 import { useIsKeyPressed } from "../../hooks/useIsKeyPressed";
-
-import { useAppState, usePathfinderState } from "../../state";
+import { usePathfinderState } from "../../state";
 
 import "./PathfinderControls.css";
 
 export function PathfinderControls() {
-  const { nextStep, resetSearch } = usePathfinderState();
+  const { nextStep, resetSearch, automaticSearchRunning, startAutomaticSearch, stopAutomaticSearch } =
+    usePathfinderState();
 
   const isShiftPressed = useIsKeyPressed("Shift");
 
   function reset() {
     // If shift is pressed, will remove the start and target markers as well
     resetSearch(isShiftPressed);
-  }
-
-  const intervalId = useRef(0);
-  function automaticSeach() {
-    intervalId.current = setInterval(() => {
-      nextStep();
-    }, 50);
   }
 
   return (
@@ -34,8 +24,8 @@ export function PathfinderControls() {
         Next step
       </button>
 
-      <button className="button" onClick={automaticSeach}>
-        Automatic search
+      <button className="button" onClick={!automaticSearchRunning ? startAutomaticSearch : stopAutomaticSearch}>
+        {!automaticSearchRunning ? "Start automatic search" : "Stop automatic search"}
       </button>
     </div>
   );

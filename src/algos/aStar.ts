@@ -6,6 +6,7 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
   const toVisit = new NodesQueue(startNode);
   const visited: VisitedNode = new Map();
 
+  let didFindPath = false;
   let step = 0;
   mainLoop: while (!toVisit.done) {
     const current = toVisit.dequeue();
@@ -13,6 +14,7 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
 
     // Early exit
     if (current.id === targetNode) {
+      didFindPath = true;
       break mainLoop;
     }
 
@@ -52,8 +54,8 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
       nodesToVisit: toVisit.values,
     };
   }
-
-  return { path: reconstructPath(startNode, targetNode, visited) };
+  
+  return { path: didFindPath ? reconstructPath(startNode, targetNode, visited) : [] };
 }
 
 // Euclidean distance

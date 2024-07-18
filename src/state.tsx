@@ -16,7 +16,7 @@ export interface AppState {
   setTargetNode: (node: NodeId | null) => void;
 }
 
-const useAppState = create<AppState>((set) => ({
+const useAppState = create<AppState>((set, get) => ({
   initializeMap: (x: number, y: number) => {
     const mapInstance = new MapClass(x, y);
     const mapControls: MapControls = {
@@ -28,6 +28,7 @@ const useAppState = create<AppState>((set) => ({
           return;
         }
         set({ map: didAddColumn });
+        usePathfinderState.getState().stopAutomaticSearch();
       },
       addRow: () => {
         const didAddRow = mapInstance.addRow();
@@ -37,8 +38,12 @@ const useAppState = create<AppState>((set) => ({
           return;
         }
         set({ map: didAddRow });
+        usePathfinderState.getState().stopAutomaticSearch();
       },
-      toggleNode: (x: number, y: number) => set({ map: mapInstance.toogleNode(x, y) }),
+      toggleNode: (x: number, y: number) => {
+        set({ map: get().mapInstance.toogleNode(x, y) });
+        usePathfinderState.getState().stopAutomaticSearch();
+      },
       clearMap: () => {
         const newMapInstance = new MapClass(mapInstance.maxX, mapInstance.maxY, 0);
 
@@ -46,6 +51,7 @@ const useAppState = create<AppState>((set) => ({
         set({ mapInstance: newMapInstance });
 
         usePathfinderState.getState().resetSearch(true);
+        usePathfinderState.getState().stopAutomaticSearch();
       },
       randomizeMap: () => {
         const newMapInstance = new MapClass(mapInstance.maxX, mapInstance.maxY);
@@ -53,7 +59,11 @@ const useAppState = create<AppState>((set) => ({
         set({ map: newMapInstance.values });
         set({ mapInstance: newMapInstance });
 
+        set({ startNode: null });
+        set({ targetNode: null });
+
         usePathfinderState.getState().resetSearch(true);
+        usePathfinderState.getState().stopAutomaticSearch();
       },
     };
 
@@ -83,6 +93,10 @@ interface PathfinderState {
   currentSearch: PathfinderSearch | null;
   nextStep: () => void;
   resetSearch: (fullReset?: boolean) => void;
+
+  automaticSearchRunning: number | null;
+  startAutomaticSearch: () => void;
+  stopAutomaticSearch: () => void;
 }
 
 export const usePathfinderState = create<PathfinderState>((set, get) => ({
@@ -120,6 +134,10 @@ export const usePathfinderState = create<PathfinderState>((set, get) => ({
     const nextStep = currentSearch!.next();
     if (nextStep.done) {
       set({ path: nextStep.value.path });
+
+      if (get().automaticSearchRunning) {
+        get().stopAutomaticSearch();
+      }
     } else {
       const { step, nodesToVisit, nodesVisited } = nextStep.value;
       set({ step });
@@ -137,6 +155,20 @@ export const usePathfinderState = create<PathfinderState>((set, get) => ({
     if (fullReset) {
       useAppState.setState({ startNode: null, targetNode: null });
     }
+
+    get().stopAutomaticSearch();
+  },
+
+  automaticSearchRunning: null,
+  startAutomaticSearch: () => {
+    const interval = setInterval(() => {
+      get().nextStep();
+    }, 50);
+    set({ automaticSearchRunning: interval });
+  },
+  stopAutomaticSearch: () => {
+    clearInterval(get().automaticSearchRunning!);
+    set({ automaticSearchRunning: null });
   },
 }));
 
