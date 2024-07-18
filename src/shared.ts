@@ -22,14 +22,6 @@ export enum Direction {
 }
 
 export type MapValues = Kind[][]
-export interface MapControls {
-  addColumn: () => void;
-  addRow: () => void;
-  toggleNode: (x: number, y: number) => void;
-  clearMap: () => void;
-  randomizeMap: () => void;
-}
-
 export type NodeId = `${number}-${number}`;
 
 export  type PathfinderFunction = (map: MapValues, startNode: NodeId, targetNode: NodeId) => PathfinderSearch
