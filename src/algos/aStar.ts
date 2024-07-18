@@ -66,5 +66,5 @@ function getDistance(p1: NodeId, p2: NodeId): number {
   const a = aCoords[0] - bCoords[0];
   const b = aCoords[1] - bCoords[1];
 
-  return a * a + b * b;
+  return Math.hypot(a, b);
 }

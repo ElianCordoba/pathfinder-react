@@ -2,9 +2,18 @@ import { Kind, MapValues, MAX_MAP_SIZE, PERCENTAGE_OF_WALLS } from "../shared";
 import { getRandomMap, getRandomSpot } from "./random";
 
 export class Map {
-  values: Kind[][];
-  constructor(x: number, y: number, percentageOfWalls = PERCENTAGE_OF_WALLS) {
-    this.values = getRandomMap(x, y, percentageOfWalls);
+  values!: Kind[][];
+  constructor(x: number, y: number, percentageOfWalls = PERCENTAGE_OF_WALLS, shallowInit = false) {
+    if (!shallowInit) {
+      this.values = getRandomMap(x, y, percentageOfWalls);
+    }
+    
+  }
+
+  static load(map: MapValues) {    
+    const newMap = new Map(0, 0, 0, true);
+    newMap.values = map
+    return this
   }
 
   get maxY() {

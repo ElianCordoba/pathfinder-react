@@ -8,9 +8,7 @@ import { useEffect } from "react";
 
 function App() {
   const appState = useAppState();
-  useEffect(() => {
-    appState.initializeMap(15, 10);
-  }, []);
+  useEffect(() => appState.loadOrInitializeMap(), []);
 
   return (
     <>

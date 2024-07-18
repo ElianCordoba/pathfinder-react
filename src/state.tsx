@@ -1,11 +1,14 @@
 import { create } from "zustand";
-import { MapValues, NodeId, PathfinderSearch, PathSegment } from "./shared";
+import { MAP_KEY, MapValues, NodeId, PathfinderSearch, PathSegment, PersistedMapState } from "./shared";
 import { Map as MapClass } from "./utils/map";
 import { search } from "./algos/aStar";
 import { parseId } from "./utils/utils";
 
 export interface AppState {
+  loadOrInitializeMap: () => void;
   initializeMap: (x: number, y: number) => void;
+  loadMap: (serializedMap: string) => void;
+  persistMap(): void;
   map: MapValues;
   mapInstance: MapClass;
   startNode: NodeId | null;
@@ -20,6 +23,41 @@ export interface AppState {
 }
 
 const useAppState = create<AppState>((set, get) => ({
+  loadOrInitializeMap: () => {
+    const storedMap = localStorage.getItem(MAP_KEY);
+
+    if (storedMap) {
+      console.log("Loaded map from local storage");
+      get().loadMap(storedMap);
+    } else {
+      console.log("Initialized map");
+      get().initializeMap(15, 10);
+    }
+  },
+  initializeMap: (x: number, y: number) => {
+    const mapInstance = new MapClass(x, y);
+
+    set({ map: mapInstance.values });
+    set({ mapInstance });
+  },
+  loadMap(serializedMap: string) {
+    const { startNode, targetNode, map } = JSON.parse(serializedMap) as PersistedMapState;
+
+    const mapInstance = new MapClass(0, 0, 0, true);
+    mapInstance.values = map;
+
+    set({ map, mapInstance, startNode, targetNode });
+  },
+  persistMap() {
+    console.log("Persisting map");
+    const { map, startNode, targetNode } = get();
+    const state = { map, startNode, targetNode };
+    localStorage.setItem(MAP_KEY, JSON.stringify(state));
+  },
+  map: [[]],
+  mapInstance: {} as any,
+  startNode: null,
+  targetNode: null,
   addColumn() {
     const didAddColumn = get().mapInstance.addColum();
 
@@ -27,7 +65,9 @@ const useAppState = create<AppState>((set, get) => ({
       console.log("Max map size reached");
       return;
     }
+
     set({ map: didAddColumn });
+
     usePathfinderState.getState().stopAutomaticSearch();
   },
   addRow() {
@@ -37,12 +77,17 @@ const useAppState = create<AppState>((set, get) => ({
       console.log("Max map size reached");
       return;
     }
+
     set({ map: didAddRow });
+
     usePathfinderState.getState().stopAutomaticSearch();
   },
   toggleNode(nodeId: NodeId) {
     const [x, y] = parseId(nodeId);
-    set({ map: get().mapInstance.toogleNode(x, y) });
+    const map = get().mapInstance.toogleNode(x, y);
+
+    set({ map });
+
     usePathfinderState.getState().stopAutomaticSearch();
   },
   clearMap: () => {
@@ -68,17 +113,18 @@ const useAppState = create<AppState>((set, get) => ({
     usePathfinderState.getState().resetSearch(true);
     usePathfinderState.getState().stopAutomaticSearch();
   },
-  initializeMap: (x: number, y: number) => {
-    const mapInstance = new MapClass(x, y);
-
-    set({ map: mapInstance.values });
-    set({ mapInstance });
-  },
-  map: [[]],
-  mapInstance: {} as any,
-  startNode: null,
-  targetNode: null,
 }));
+
+// Automatically persist the state
+const changesToPersist: (keyof AppState)[] = ["map", "startNode", "targetNode"];
+useAppState.subscribe((state, prevState) => {
+  for (const key of changesToPersist) {
+    if (state[key] !== prevState[key]) {
+      useAppState.getState().persistMap();
+      break;
+    }
+  }
+});
 
 interface PathfinderState {
   step: number;
@@ -101,6 +147,7 @@ export const usePathfinderState = create<PathfinderState>((set, get) => ({
   nodesVisited: new Map(),
   path: [],
   currentSearch: null,
+  searchDone: false,
   nextStep: () => {
     // This state usage is required when reading a state from another state
     const startNode = useAppState.getState().startNode;
@@ -126,11 +173,11 @@ export const usePathfinderState = create<PathfinderState>((set, get) => ({
 
     const nextStep = currentSearch!.next();
     if (nextStep.done) {
-      set({ path: nextStep.value.path });
-
-      if (get().automaticSearchRunning) {
-        get().stopAutomaticSearch();
+      if (nextStep.value) {
+        set({ path: nextStep.value.path });
       }
+
+      get().stopAutomaticSearch();
     } else {
       const { step, nodesToVisit, nodesVisited } = nextStep.value;
       set({ step });
@@ -154,6 +201,12 @@ export const usePathfinderState = create<PathfinderState>((set, get) => ({
 
   automaticSearchRunning: null,
   startAutomaticSearch: () => {
+    // const { automaticSearchRunning, path } = get();
+
+    // if (automaticSearchRunning || path.length) {
+    //   return;
+    // }
+
     const interval = setInterval(() => {
       get().nextStep();
     }, 50);

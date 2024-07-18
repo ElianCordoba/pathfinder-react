@@ -1,6 +1,8 @@
 export const PERCENTAGE_OF_WALLS = 30;
 export const MAX_MAP_SIZE = 750
 
+export const MAP_KEY = "mapState"
+
 export enum Kind {
   Empty,
   Wall,
@@ -23,6 +25,12 @@ export enum Direction {
 
 export type MapValues = Kind[][]
 export type NodeId = `${number}-${number}`;
+
+export interface PersistedMapState {
+  map: MapValues
+  startNode: NodeId | null;
+  targetNode: NodeId | null;
+}
 
 export  type PathfinderFunction = (map: MapValues, startNode: NodeId, targetNode: NodeId) => PathfinderSearch
 export type PathfinderSearch = Generator<
