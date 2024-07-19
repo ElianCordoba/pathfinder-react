@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { MAP_KEY, MapValues, NodeId, PathfinderSearch, PathSegment, PersistedMapState } from "./shared";
+import { Kind, MAP_KEY, MapValues, NodeId, PathfinderSearch, PathSegment, PersistedMapState } from "./shared";
 import { Map as MapClass } from "./utils/map";
 import { search } from "./algos/aStar";
 import { parseId } from "./utils/utils";
@@ -83,6 +83,12 @@ const useAppState = create<AppState>((set, get) => ({
     usePathfinderState.getState().stopAutomaticSearch();
   },
   toggleNode(nodeId: NodeId) {
+    const { startNode, targetNode } = get();
+
+    if (startNode === nodeId || targetNode === nodeId) {
+      return;
+    }
+
     const [x, y] = parseId(nodeId);
     const map = get().mapInstance.toogleNode(x, y);
 

@@ -27,7 +27,6 @@ export class NodesQueue {
 
     if (nodeAlreadyEnqueued !== -1) {
       throw new Error("Already seen node");
-      // this.values.splice(nodeAlreadyEnqueued, 1)
     }
 
     const indexToInsert = this.findIndexToInsert(segment.fCost);
@@ -48,9 +47,16 @@ export class NodesQueue {
   findIndexToInsert(targetPriority: number) {
     let i = 0;
     for (const element of this.values) {
-      // TODO: If the there is a match in fCost cost comparte the other 2 costs
       if (targetPriority < element.fCost) {
         break;
+      } else if (targetPriority === element.fCost) {
+        if (targetPriority < element.gCost) {
+          break;
+        } else if (targetPriority === element.gCost) {
+          if (targetPriority < element.hCost) {
+            break;
+          }
+        }
       }
       i++;
     }
@@ -156,21 +162,21 @@ export function getValidNeighbors(map: MapValues, visited: Map<NodeId, PathSegme
   const result: NeighborNode[] = [];
 
   for (const neighbor of neighborsCoords) {
-    const { x, y } = neighbor as NeighborNode;
+    const { x: currentX, y: currentY } = neighbor as NeighborNode;
 
-    if (x < 0 || x > maxX || y < 0 || y > maxY) {
+    if (currentX < 0 || currentX > maxX || currentY < 0 || currentY > maxY) {
       continue;
     }
 
-    assert(map[y] !== undefined && map[y][x] !== undefined && map[y][x] !== undefined);
+    assert(map[currentY] !== undefined && map[currentY][currentX] !== undefined && map[currentY][currentX] !== undefined);
 
-    const node = map[y][x];
+    const node = map[currentY][currentX];
 
     if (node === Kind.Wall) {
       continue;
     }
 
-    const id = formatId(x, y);
+    const id = formatId(currentX, currentY);
 
     if (visited.has(id) || id === startNode) {
       continue

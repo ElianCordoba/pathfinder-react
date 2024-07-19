@@ -54,7 +54,7 @@ export function* search(map: MapValues, startNode: NodeId, targetNode: NodeId): 
       nodesToVisit: toVisit.values,
     };
   }
-  
+
   return { path: didFindPath ? reconstructPath(startNode, targetNode, visited) : [] };
 }
 

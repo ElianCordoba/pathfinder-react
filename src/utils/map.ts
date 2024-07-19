@@ -10,12 +10,6 @@ export class Map {
     
   }
 
-  static load(map: MapValues) {    
-    const newMap = new Map(0, 0, 0, true);
-    newMap.values = map
-    return this
-  }
-
   get maxY() {
     return this.values.length;
   }
@@ -35,7 +29,7 @@ export class Map {
   }
 
   addColum(): MapValues | false {
-    const mapSize = this.maxY + 1 * this.maxX
+    const mapSize = (this.maxY + 1) * this.maxX
     if (mapSize > MAX_MAP_SIZE) {
       return false
     }
@@ -50,7 +44,7 @@ export class Map {
   }
 
   addRow(): MapValues | false {
-    const mapSize = this.maxY * this.maxX + 1
+    const mapSize = this.maxY * (this.maxX + 1)
     if (mapSize > MAX_MAP_SIZE) {
       return false
     }
