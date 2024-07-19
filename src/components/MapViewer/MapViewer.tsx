@@ -73,6 +73,7 @@ export function MapViewer() {
 
   // Dragging
 
+  // @ts-ignore
   function handleOnDrag(event: any, id: NodeId) {
     event.preventDefault();
 
@@ -84,6 +85,7 @@ export function MapViewer() {
     console.log("Dragging", id);
   }
 
+  // @ts-ignore
   function handleOnDrop(event: any) {
     event.preventDefault();
 
